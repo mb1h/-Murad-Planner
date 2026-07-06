@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark" data-lang="ar">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Murad Learning Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pdf-report.css" />
+</head>
+
+<body>
+  <!-- ===== LOADING SCREEN ===== -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-logo">
+        <div class="logo-icon"><i class="fas fa-brain"></i></div>
+        <h1 class="logo-text">Murad<span>Planner</span></h1>
+      </div>
+      <div class="loading-bar-wrap">
+        <div class="loading-bar" id="loading-bar"></div>
+      </div>
+      <p class="loading-msg" id="loading-msg">Initializing...</p>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Button -->
+  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon-sm"><i class="fas fa-brain"></i></div>
+        <span class="logo-title">Murad<span>Planner</span></span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label" data-i18n="nav.main">الرئيسية</span>
+        <a href="#" class="nav-item active" onclick="showPage('dashboard', this)">
+          <i class="fas fa-th-large"></i>
+          <span data-i18n="nav.dashboard">Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" onclick="showPage('weekly', this)">
+          <i class="fas fa-calendar-week"></i>
+          <span data-i18n="nav.weekly">الجدول الأسبوعي</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label" data-i18n="nav.patterns">الأنماط</span>
+        <a href="#" class="nav-item pattern-a" onclick="showDayPattern('A', this)">
+          <i class="fas fa-star"></i>
+          <span data-i18n="nav.patternA">Pattern A - تعلم جديد</span>
+        </a>
+        <a href="#" class="nav-item pattern-b" onclick="showDayPattern('B', this)">
+          <i class="fas fa-dumbbell"></i>
+          <span data-i18n="nav.patternB">Pattern B - ترسيخ</span>
+        </a>
+        <a href="#" class="nav-item pattern-c" onclick="showDayPattern('C', this)">
+          <i class="fas fa-link"></i>
+          <span data-i18n="nav.patternC">Pattern C - دمج</span>
+        </a>
+        <a href="#" class="nav-item pattern-d" onclick="showDayPattern('D', this)">
+          <i class="fas fa-flag-checkered"></i>
+          <span data-i18n="nav.patternD">Pattern D - إغلاق</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label" data-i18n="nav.tools">الأدوات</span>
+        <a href="#" class="nav-item" onclick="showPage('settings', this)">
+          <i class="fas fa-cog"></i>
+          <span data-i18n="nav.settings">الإعدادات</span>
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar"><i class="fas fa-user-graduate"></i></div>
+        <div class="user-details">
+          <span class="user-name">Murad</span>
+          <span class="user-role" data-i18n="user.role">مخطط التعلم</span>
+        </div>
+      </div>
+      <div class="sidebar-actions">
+        <button class="btn-icon" onclick="toggleLanguage()" title="تغيير اللغة">
+          <i class="fas fa-language"></i>
+        </button>
+        <button class="btn-icon" onclick="toggleTheme()" title="الوضع الليلي">
+          <i class="fas fa-moon" id="theme-icon"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content" id="mainContent">
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">
+          <h1 data-i18n="dashboard.title">لوحة التحكم</h1>
+          <p data-i18n="dashboard.subtitle">نظام التعلم اليومي المتقدم</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-secondary" onclick="exportWeeklyPDF()">
+            <i class="fas fa-file-pdf"></i>
+            <span data-i18n="btn.exportWeekly">تصدير أسبوعي</span>
+          </button>
+          <button class="btn-primary" onclick="showPage('weekly', null)">
+            <i class="fas fa-plus"></i>
+            <span data-i18n="btn.newWeek">أسبوع جديد</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Cards -->
+      <div class="status-grid" id="statusGrid">
+        <div class="status-card card-week">
+          <div class="card-icon"><i class="fas fa-calendar"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.week">الأسبوع الحالي</span>
+            <span class="card-value" id="stat-week">1</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-pattern">
+          <div class="card-icon"><i class="fas fa-star"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.pattern">النمط الحالي</span>
+            <span class="card-value" id="stat-pattern">A</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-day">
+          <div class="card-icon"><i class="fas fa-sun"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.day">اليوم الحالي</span>
+            <span class="card-value" id="stat-day">السبت</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-session">
+          <div class="card-icon"><i class="fas fa-bolt"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.session">الجلسة</span>
+            <span class="card-value" id="stat-session">صباحية</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-block">
+          <div class="card-icon"><i class="fas fa-layer-group"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.block">البلوك الحالي</span>
+            <span class="card-value" id="stat-block">مراجعة</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-timer">
+          <div class="card-icon"><i class="fas fa-clock"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.timer">المؤقت</span>
+            <span class="card-value" id="stat-timer">00:00:00</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-next">
+          <div class="card-icon"><i class="fas fa-arrow-left"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.next">البلوك التالي</span>
+            <span class="card-value" id="stat-next">رياضيات</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+        <div class="status-card card-status">
+          <div class="card-icon"><i class="fas fa-circle"></i></div>
+          <div class="card-content">
+            <span class="card-label" data-i18n="status.status">الحالة</span>
+            <span class="card-value status-active" id="stat-status">نشط</span>
+          </div>
+          <div class="card-glow"></div>
+        </div>
+      </div>
+
+      <!-- Quick Week Overview -->
+      <div class="section-header">
+        <h2 data-i18n="dashboard.weekOverview">نظرة سريعة على الأسبوع</h2>
+      </div>
+      <div class="week-overview" id="weekOverview"></div>
+
+      <!-- Today's Progress -->
+      <div class="two-col">
+        <div class="glass-card">
+          <div class="card-header-inner">
+            <h3>
+              <i class="fas fa-chart-bar"></i>
+              <span data-i18n="dashboard.todayProgress">تقدم اليوم</span>
+            </h3>
+          </div>
+          <div id="todayProgressBlocks"></div>
+        </div>
+        <div class="glass-card">
+          <div class="card-header-inner">
+            <h3>
+              <i class="fas fa-fire"></i>
+              <span data-i18n="dashboard.weekStats">إحصائيات الأسبوع</span>
+            </h3>
+          </div>
+          <div id="weekStatsChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== WEEKLY PAGE ===== -->
+    <section class="page" id="page-weekly">
+      <div class="page-header">
+        <div class="page-title">
+          <h1 data-i18n="weekly.title">Weekly Pattern Board</h1>
+          <p data-i18n="weekly.subtitle">الجدول الأسبوعي القابل للتحرير</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-secondary" onclick="exportWeeklyPDF()">
+            <i class="fas fa-file-pdf"></i>
+            <span data-i18n="btn.exportWeekly">تصدير PDF أسبوعي</span>
+          </button>
+          <button class="btn-primary" onclick="saveWeeklyData()">
+            <i class="fas fa-save"></i>
+            <span data-i18n="btn.save">حفظ التغييرات</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="week-controls">
+        <div class="week-selector">
+          <button class="btn-icon" onclick="changeWeek(-1)">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+          <span class="week-label"><i class="fas fa-calendar-week"></i>
+            <span data-i18n="weekly.week">الأسبوع</span>
+            <span id="currentWeekNum">1</span></span>
+          <button class="btn-icon" onclick="changeWeek(1)">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+        </div>
+        <div class="auto-save-indicator" id="autoSaveIndicator">
+          <i class="fas fa-check-circle"></i>
+          <span data-i18n="weekly.saved">تم الحفظ</span>
+        </div>
+      </div>
+
+      <div class="weekly-table-wrap glass-card">
+        <table class="weekly-table" id="weeklyTable">
+          <thead>
+            <tr>
+              <th data-i18n="table.day">اليوم</th>
+              <th data-i18n="table.pattern">النمط</th>
+              <th class="editable-header" data-col="0" contenteditable="true">
+                رياضيات
+              </th>
+              <th class="editable-header" data-col="1" contenteditable="true">
+                برمجة
+              </th>
+              <th class="editable-header" data-col="2" contenteditable="true">
+                علوم الحاسوب
+              </th>
+              <th class="editable-header" data-col="3" contenteditable="true">
+                التطبيق المتكامل
+              </th>
+              <th class="editable-header" data-col="4" contenteditable="true">
+                المشروع
+              </th>
+              <th class="editable-header" data-col="5" contenteditable="true">
+                المراجعة
+              </th>
+              <th data-i18n="table.actions">إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="weeklyTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== DAILY PAGE ===== -->
+    <section class="page" id="page-daily">
+      <div class="page-header">
+        <div class="page-title">
+          <h1 id="dailyPageTitle">Daily Execution Board</h1>
+          <p id="dailyPageSubtitle"></p>
+        </div>
+        <div class="page-actions">
+          <button class="btn-secondary" onclick="goBackToWeekly()">
+            <i class="fas fa-arrow-right"></i>
+            <span data-i18n="btn.back">رجوع</span>
+          </button>
+          <button class="btn-secondary" onclick="exportDailyPDF()">
+            <i class="fas fa-file-pdf"></i>
+            <span data-i18n="btn.exportDaily">تصدير PDF يومي</span>
+          </button>
+          <button class="btn-primary" onclick="saveDailyData()">
+            <i class="fas fa-save"></i>
+            <span data-i18n="btn.save">حفظ</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pattern Explanation Card -->
+      <div class="pattern-explanation-card" id="patternExplanationCard"></div>
+
+      <!-- Daily Blocks -->
+      <div class="daily-content">
+        <div class="blocks-container" id="blocksContainer">
+          <!-- Blocks rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Integration Builder (Pattern C only) -->
+      <div class="integration-builder glass-card" id="integrationBuilder" style="display: none">
+        <div class="card-header-inner">
+          <h3>
+            <i class="fas fa-project-diagram"></i>
+            <span data-i18n="integration.title">Integration Builder</span>
+          </h3>
+          <p data-i18n="integration.subtitle">اربط المفاهيم بصرياً</p>
+        </div>
+        <div class="integration-form">
+          <div class="int-input-group">
+            <label data-i18n="integration.math">المفهوم الرياضي</label>
+            <input type="text" id="intMath" placeholder="e.g. Vectors" class="int-input" />
+          </div>
+          <div class="int-connector"><i class="fas fa-plus"></i></div>
+          <div class="int-input-group">
+            <label data-i18n="integration.prog">المفهوم البرمجي</label>
+            <input type="text" id="intProg" placeholder="e.g. NumPy Arrays" class="int-input" />
+          </div>
+          <div class="int-connector"><i class="fas fa-plus"></i></div>
+          <div class="int-input-group">
+            <label data-i18n="integration.cs">مفهوم علوم الحاسوب</label>
+            <input type="text" id="intCS" placeholder="e.g. Memory Layout" class="int-input" />
+          </div>
+          <div class="int-connector"><i class="fas fa-arrow-down"></i></div>
+          <div class="int-result-group">
+            <label data-i18n="integration.result">الناتج المتكامل</label>
+            <input type="text" id="intResult" placeholder="e.g. Vector Similarity Tool" class="int-input" />
+          </div>
+        </div>
+        <div class="integration-diagram" id="integrationDiagram"></div>
+        <div class="int-relation-group">
+          <label data-i18n="integration.relation">كيف ترتبط معاً؟</label>
+          <textarea id="intRelation" rows="4" placeholder="اشرح العلاقة بين المفاهيم..."
+            class="int-textarea"></textarea>
+        </div>
+        <button class="btn-primary" onclick="renderIntegrationDiagram()">
+          <i class="fas fa-project-diagram"></i>
+          <span data-i18n="integration.build">بناء المخطط</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS PAGE ===== -->
+    <section class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">
+          <h1 data-i18n="settings.title">الإعدادات</h1>
+          <p data-i18n="settings.subtitle">تخصيص تجربة التعلم</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <!-- Sound Settings -->
+        <div class="glass-card settings-card">
+          <div class="card-header-inner">
+            <h3>
+              <i class="fas fa-volume-up"></i>
+              <span data-i18n="settings.sound">إعدادات الأصوات</span>
+            </h3>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.defaultSound">نغمة التنبيه الافتراضية</label>
+            <select class="setting-select" id="defaultSound" onchange="saveSettings()">
+              <option value="bell">Classic Bell 🔔</option>
+              <option value="digital">Digital Alarm 📳</option>
+              <option value="soft">Soft Notification 🎵</option>
+              <option value="school">School Bell 🏫</option>
+              <option value="focus">Focus Bell 🎯</option>
+              <option value="nature">Nature Chime 🌿</option>
+              <option value="meditation">Meditation Bell 🧘</option>
+              <option value="productivity">Productivity Bell ⚡</option>
+              <option value="minimal">Minimal Bell ✨</option>
+              <option value="deep">Deep Focus Alarm 🔮</option>
+            </select>
+          </div>
+          <div class="sound-library" id="soundLibrary"></div>
+          <div class="setting-item">
+            <label data-i18n="settings.volume">مستوى الصوت</label>
+            <div class="slider-wrap">
+              <input type="range" min="0" max="100" value="70" class="setting-slider" id="alarmVolume"
+                onchange="saveSettings()" />
+              <span id="volumeVal">70%</span>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.repeat">تكرار التنبيه</label>
+            <div class="toggle-wrap">
+              <label class="toggle">
+                <input type="checkbox" id="repeatAlarm" onchange="saveSettings()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.repeatCount">عدد التكرارات</label>
+            <select class="setting-select" id="repeatCount" onchange="saveSettings()">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+              <option value="10">10</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.duration">مدة التنبيه</label>
+            <select class="setting-select" id="alarmDuration" onchange="saveSettings()">
+              <option value="5">5 ثواني</option>
+              <option value="10" selected>10 ثواني</option>
+              <option value="20">20 ثواني</option>
+              <option value="30">30 ثواني</option>
+              <option value="60">60 ثواني</option>
+            </select>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.uploadSound">رفع نغمة مخصصة</label>
+            <div class="upload-sound-area">
+              <input type="file" id="customSoundFile" accept=".mp3,.wav,.ogg,.m4a" style="display: none"
+                onchange="uploadCustomSound(this)" />
+              <button class="btn-secondary" onclick="document.getElementById('customSoundFile').click()">
+                <i class="fas fa-upload"></i>
+                <span data-i18n="settings.upload">رفع ملف صوتي</span>
+              </button>
+              <span class="upload-hint" data-i18n="settings.uploadHint">MP3, WAV, OGG, M4A</span>
+            </div>
+          </div>
+          <div id="customSoundsSection" style="display: none">
+            <h4 class="section-subtitle" data-i18n="settings.customSounds">
+              نغماتي المخصصة
+            </h4>
+            <div id="customSoundsList"></div>
+          </div>
+        </div>
+
+        <!-- General Settings -->
+        <div class="glass-card settings-card">
+          <div class="card-header-inner">
+            <h3>
+              <i class="fas fa-cog"></i>
+              <span data-i18n="settings.general">الإعدادات العامة</span>
+            </h3>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.language">اللغة</label>
+            <div class="lang-btns">
+              <button class="lang-btn active" id="langAr" onclick="setLanguage('ar')">
+                العربية 🇸🇦
+              </button>
+              <button class="lang-btn" id="langEn" onclick="setLanguage('en')">
+                English 🇺🇸
+              </button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.theme">المظهر</label>
+            <div class="lang-btns">
+              <button class="lang-btn" onclick="setTheme('dark')" data-i18n="settings.dark">
+                داكن
+              </button>
+              <button class="lang-btn" onclick="setTheme('light')" data-i18n="settings.light">
+                فاتح
+              </button>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.userName">اسم المستخدم</label>
+            <input type="text" class="setting-input" id="userName" value="Murad" onchange="saveSettings()"
+              placeholder="أدخل اسمك" />
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.weekStart">بداية الأسبوع من</label>
+            <input type="date" class="setting-input" id="weekStartDate" onchange="saveSettings()" />
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.notifications">الإشعارات</label>
+            <div class="toggle-wrap">
+              <label class="toggle">
+                <input type="checkbox" id="enableNotifications" checked onchange="saveSettings()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Per-Block Sound Settings -->
+        <div class="glass-card settings-card full-width">
+          <div class="card-header-inner">
+            <h3>
+              <i class="fas fa-music"></i>
+              <span data-i18n="settings.perBlockSound">نغمة لكل بلوك</span>
+            </h3>
+          </div>
+          <div id="perBlockSoundSettings"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== BLOCK DETAILS PANEL ===== -->
+  <div class="panel-overlay" id="panelOverlay" onclick="closeBlockPanel()"></div>
+  <aside class="block-panel" id="blockPanel">
+    <div class="panel-header">
+      <h3 data-i18n="panel.title">تفاصيل البلوك</h3>
+      <button class="btn-icon" onclick="closeBlockPanel()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="panel-body" id="panelBody">
+      <div class="panel-field">
+        <label data-i18n="panel.name">اسم البلوك</label>
+        <input type="text" id="panelName" class="panel-input" />
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.time">الوقت</label>
+        <div class="time-inputs">
+          <input type="text" id="panelTimeStart" class="panel-input time-input" placeholder="08:00" />
+          <span>-</span>
+          <input type="text" id="panelTimeEnd" class="panel-input time-input" placeholder="09:00" />
+        </div>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.activity">النشاط</label>
+        <textarea id="panelActivity" class="panel-textarea" rows="2"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.goal">الهدف</label>
+        <textarea id="panelGoal" class="panel-textarea" rows="2"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.learn">ماذا سأتعلم؟</label>
+        <textarea id="panelLearn" class="panel-textarea" rows="2"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.apply">ماذا سأطبق؟</label>
+        <textarea id="panelApply" class="panel-textarea" rows="2"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.notes">الملاحظات</label>
+        <textarea id="panelNotes" class="panel-textarea" rows="3"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.outputs">المخرجات المتوقعة</label>
+        <textarea id="panelOutputs" class="panel-textarea" rows="2"></textarea>
+      </div>
+      <div class="panel-field">
+        <label data-i18n="panel.sound">نغمة التنبيه</label>
+        <select class="setting-select" id="panelSound">
+          <option value="">الافتراضي</option>
+          <option value="bell">Classic Bell 🔔</option>
+          <option value="digital">Digital Alarm 📳</option>
+          <option value="soft">Soft Notification 🎵</option>
+          <option value="school">School Bell 🏫</option>
+          <option value="focus">Focus Bell 🎯</option>
+          <option value="nature">Nature Chime 🌿</option>
+          <option value="meditation">Meditation Bell 🧘</option>
+          <option value="productivity">Productivity Bell ⚡</option>
+          <option value="minimal">Minimal Bell ✨</option>
+          <option value="deep">Deep Focus Alarm 🔮</option>
+        </select>
+      </div>
+      <div class="panel-actions">
+        <button class="btn-primary full-btn" onclick="savePanelData()">
+          <i class="fas fa-save"></i>
+          <span data-i18n="btn.save">حفظ</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== BLOCK FINISHED MODAL ===== -->
+  <div class="modal-overlay" id="blockFinishedModal" style="display: none">
+    <div class="modal glass-card">
+      <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+      <h2 data-i18n="modal.blockFinished">انتهى البلوك!</h2>
+      <p id="finishedBlockName" class="modal-block-name"></p>
+      <div class="modal-next">
+        <span data-i18n="modal.nextBlock">البلوك التالي:</span>
+        <span class="next-block-name" id="nextBlockName"></span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="startNextBlock()">
+          <i class="fas fa-play"></i>
+          <span data-i18n="modal.startNext">ابدأ البلوك التالي</span>
+        </button>
+        <button class="btn-secondary" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+          <span data-i18n="modal.close">إغلاق</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOOLTIP ===== -->
+  <div class="custom-tooltip" id="customTooltip" style="display: none">
+    <div class="tooltip-header" id="tooltipHeader"></div>
+    <div class="tooltip-body" id="tooltipBody"></div>
+  </div>
+
+  <!-- ===== TOAST NOTIFICATIONS ===== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ===== USER GUIDE BUTTON ===== -->
+  <button class="guide-btn" id="guideBtn" onclick="toggleUserGuide()" title="دليل الاستخدام">
+    <i class="fas fa-question-circle"></i>
+  </button>
+
+  <!-- ===== USER GUIDE MODAL ===== -->
+  <div class="guide-overlay" id="guideOverlay" onclick="closeUserGuide()"></div>
+  <aside class="guide-panel" id="guidePanel">
+    <div class="guide-header">
+      <div class="guide-header-content">
+        <div class="guide-icon"><i class="fas fa-book-open"></i></div>
+        <div>
+          <h2>دليل المستخدم</h2>
+          <p>Murad Learning Planner</p>
+        </div>
+      </div>
+      <button class="guide-close-btn" onclick="closeUserGuide()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="guide-tabs">
+      <button class="guide-tab active" onclick="switchGuideTab('overview', this)">
+        <i class="fas fa-home"></i> نظرة عامة
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('patterns', this)">
+        <i class="fas fa-star"></i> الأنماط
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('weekly', this)">
+        <i class="fas fa-calendar-week"></i> الجدول الأسبوعي
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('daily', this)">
+        <i class="fas fa-calendar-day"></i> الجدول اليومي
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('timer', this)">
+        <i class="fas fa-clock"></i> المؤقت
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('pdf', this)">
+        <i class="fas fa-file-pdf"></i> التقارير
+      </button>
+      <button class="guide-tab" onclick="switchGuideTab('about', this)">
+        <i class="fas fa-info-circle"></i> حول النظام
+      </button>
+    </div>
+    <div class="guide-content" id="guideContent">
+      <!-- Content loaded dynamically -->
+    </div>
+  </aside>
+
+  <!-- ===== SCRIPTS ===== -->
+  <!-- Hidden Container for PDF Rendering -->
+  <div id="pdf-container" style="display: none; position: absolute; top: -9999px; left: -9999px; width: 210mm;"></div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/bidi.js"></script>
+  <script src="js/export-pdf.js"></script>
+  <script src="js/app.js"></script>
+</body>
+
+</html>

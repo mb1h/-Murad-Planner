@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Arabic Test</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="js/pdf-test.js"></script>
+  <style>
+    body { font-family: system-ui; padding: 40px; background: #0f172a; color: #e2e8f0; }
+    button { padding: 12px 24px; font-size: 16px; cursor: pointer; background: #3b82f6; color: white; border: none; border-radius: 8px; }
+    button:hover { background: #2563eb; }
+    #status { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>اختبار Arabic Text Clipping</h1>
+  <p>هذا الاختبار يستخدم Zero-Width Space (U+200B) لمنع قص الأحرف.</p>
+  <button onclick="testArabicPDF()">تحميل Arabic Test PDF</button>
+  <div id="status"></div>
+  <script>
+    window.testArabicPDF = async function() {
+      const status = document.getElementById('status');
+      status.textContent = 'جاري بناء التقرير...';
+      try {
+        await window.testArabicPDF();
+        status.textContent = 'تم التحميل! تحقق من الملف.';
+      } catch (e) {
+        status.textContent = 'خطأ: ' + e.message;
+      }
+    };
+  </script>
+</body>
+</html>
