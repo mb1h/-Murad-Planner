@@ -2305,35 +2305,15 @@
   margin-right: 2px;
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+/* ===== RESPONSIVE — breakpoint updated to 899px ===== */
+@media (max-width: 899px) {
   .ai-workspace-layout {
-    /* ✅ FIX: flex:1 already handles height — no calc needed */
     flex: 1;
     min-height: 0;
     border-radius: 0;
   }
 
-  .ai-sidebar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    z-index: 100;
-    width: 280px;
-    min-width: 280px;
-    box-shadow: var(--glass-shadow);
-  }
-
-  [dir="rtl"] .ai-sidebar {
-    left: auto;
-    right: 0;
-  }
-
-  .ai-sidebar.collapsed {
-    width: 0;
-    min-width: 0;
-  }
+  /* .ai-sidebar position/transform → layout.css §10 */
 
   .ai-topbar {
     padding: 10px 12px;
@@ -2351,6 +2331,7 @@
     grid-template-columns: 1fr;
   }
 
+  /* floating-ai-panel becomes bottom sheet — layout.css §24 */
   .floating-ai-panel {
     width: calc(100vw - 32px);
     right: -4px;

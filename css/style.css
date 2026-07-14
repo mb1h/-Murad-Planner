@@ -170,31 +170,24 @@ body[data-lang="en"] {
   font-size: 0.9rem;
 }
 
-/* === SIDEBAR === */
+/* === SIDEBAR — Visual styles only (layout handled by layout.css §3-4) === */
 .sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--sidebar-w);
+  /* position, top, bottom, width, z-index, transition → layout.css §3 */
   background: var(--bg-secondary);
   border-left: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  transition: var(--transition);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 [data-lang="en"] .sidebar {
-  right: auto;
-  left: 0;
   border-left: none;
   border-right: 1px solid var(--glass-border);
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: var(--sidebar-w-collapsed, 70px);
 }
 
 .sidebar.collapsed .logo-title,
@@ -406,50 +399,23 @@ body[data-lang="en"] {
   border-color: var(--accent-primary);
 }
 
-/* === MAIN CONTENT === */
-/* ✅ SCROLL FIX: main-content is a fixed full-height shell — no padding, no scroll */
-/* Padding is applied per-page via .page.active */
+/* === MAIN CONTENT — layout handled by layout.css §7, only visual overrides here === */
 .main-content {
-  margin-right: var(--sidebar-w);
-  height: 100vh;
-  overflow: hidden;
-  padding: 0;           /* no padding — each page handles its own padding */
-  transition: var(--transition);
-  display: flex;
-  flex-direction: column;
+  /* margin-inline-end, height, overflow, display, flex-direction → layout.css §7 */
+  padding: 0;
+  /* Keep background transparent — body::before handles the gradient */
 }
 
-
-
-[data-lang="en"] .main-content {
-  margin-right: 0;
-  margin-left: var(--sidebar-w);
-}
-
-.sidebar.collapsed~.main-content {
-  margin-right: 70px;
-}
-
-[data-lang="en"] .sidebar.collapsed~.main-content {
-  margin-left: 70px;
-  margin-right: 0;
-}
-
-/* === PAGES === */
+/* === PAGES — base rules in layout.css §8; visual overrides here === */
 .page {
-  display: none;
+  /* display:none set by layout.css §8 */
   animation: fadeIn 0.4s ease;
 }
 
-/* ✅ SCROLL FIX: Normal pages are scrollable containers that fill main-content height */
 .page.active {
-  display: block;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;   /* ONLY this page area scrolls — sidebar/header never move */
-  padding: 2rem;      /* page-level padding (AI workspace overrides to 0) */
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-primary) transparent;
+  /* display, flex:1, min-height:0, overflow-y, padding → layout.css §8 */
+  /* scrollbar → layout.css §18 */
+  /* Keep only visual overrides here */
 }
 
 @keyframes fadeIn {
@@ -2147,41 +2113,23 @@ body[data-lang="en"] {
   }
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(100%);
-  }
+/* Mobile responsive — layout.css §4,§7,§8,§15 handle core layout.
+   Only component-specific overrides remain here. */
+@media (max-width: 899px) {
+  /* sidebar drawer: transform handled by layout.css §4 */
 
-  [data-lang="en"] .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .main-content {
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-    padding: 0;
-  }
-
-  /* Mobile: reduce page padding */
-  .page.active {
-    padding: 1rem;
-  }
-
-  /* AI workspace: no padding on mobile either */
-  .page#page-ai-workspace.active {
-    padding: 0;
-  }
-
+  /* week overview: 2 columns on phone */
   .week-overview {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .pec-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* page header: margin-top for hamburger button (layout.css §8 handles padding-top) */
+  .page-header {
+    margin-top: 0; /* layout.css §8 already adds padding-top for hamburger */
   }
 }
 
@@ -2208,49 +2156,27 @@ body::before {
   pointer-events: none;
 }
 
-/* === MOBILE HAMBURGER MENU === */
+/* === MOBILE HAMBURGER MENU — visual styles (layout in layout.css §6) === */
 .mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 150;
-  width: 42px;
-  height: 42px;
+  /* display, position, z-index, size, inset-inline-end → layout.css §6 */
+  /* Visual styles: */
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-primary);
-  align-items: center;
-  justify-content: center;
   font-size: 1rem;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-[data-lang="ar"] .mobile-menu-btn {
-  left: auto;
-  right: 1rem;
-}
+/* RTL positioning handled by layout.css §6 via inset-inline-end */
 
-@media (max-width: 768px) {
-  .mobile-menu-btn {
-    display: flex;
-  }
-
-  .page-header {
-    margin-top: 3.5rem;
-  }
-}
-
-/* === OVERLAY FOR MOBILE SIDEBAR === */
+/* === OVERLAY FOR MOBILE SIDEBAR — layout in layout.css §5 === */
 .sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99;
+  /* position, inset, display, z-index, backdrop-filter → layout.css §5 */
+  /* Visual: */
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
 }
 
 .sidebar-overlay.active {

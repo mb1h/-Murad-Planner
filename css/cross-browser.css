@@ -310,25 +310,29 @@ svg {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── 18. Transform Compatibility ────────────────────────────*/
+/* ── 18. Transform Compatibility ────────────────────────────
+   Mobile sidebar drawer: breakpoint updated to 899px (layout.css §4)
+   Vendor-prefixed transforms for older browsers.
+   ─────────────────────────────────────────────────────────── */
 .sidebar {
   -webkit-transform: translateX(0);
   -ms-transform: translateX(0);
   transform: translateX(0);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 899px) {
   /* RTL: sidebar slides right to hide */
   .sidebar {
-    -webkit-transform: translateX(100%);
-    -ms-transform: translateX(100%);
-    transform: translateX(100%);
+    -webkit-transform: translateX(var(--sidebar-w, 260px));
+    -ms-transform: translateX(260px);
+    transform: translateX(var(--sidebar-w, 260px));
   }
 
-  [data-lang="en"] .sidebar {
-    -webkit-transform: translateX(-100%);
-    -ms-transform: translateX(-100%);
-    transform: translateX(-100%);
+  [data-lang="en"] .sidebar,
+  [dir="ltr"] .sidebar {
+    -webkit-transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
+    -ms-transform: translateX(-260px);
+    transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
   }
 
   .sidebar.open {
@@ -487,25 +491,29 @@ a {
   .settings-grid { grid-template-columns: 1fr; }
 }
 
-/* ── 820px: iPad Air portrait ────────────────────────────*/
-@media (min-width: 769px) and (max-width: 820px) {
-  .main-content { margin-right: 0 !important; margin-left: 0 !important; }
-  [data-lang="en"] .main-content { margin-left: 0 !important; }
-  .page.active { padding: 1.5rem; }
-  .status-grid { grid-template-columns: repeat(4, 1fr); }
+/* ── 768px–899px: iPad portrait — still mobile drawer mode ───*/
+/* sidebar breakpoint is 900px (layout.css §4), so 768-899px gets mobile layout */
+@media (min-width: 769px) and (max-width: 899px) {
+  .page.active { padding: 1.25rem; padding-top: calc(1.25rem + 56px); }
+  .status-grid { grid-template-columns: repeat(3, 1fr); }
+  .week-overview { grid-template-columns: repeat(4, 1fr); }
   .two-col { grid-template-columns: 1fr; }
-  /* Sidebar stays off-canvas on 820 — it's still too narrow */
-  .sidebar { width: 280px; }
 }
 
-/* ── 1024px: iPad landscape, small laptops ───────────────*/
-@media (min-width: 821px) and (max-width: 1024px) {
-  :root { --sidebar-w: 220px; }
-  .page.active { padding: 1.5rem; }
-  .status-grid { grid-template-columns: repeat(4, 1fr); }
+/* ── 900px–1024px: Desktop sidebar active, tight laptop ──────*/
+@media (min-width: 900px) and (max-width: 1024px) {
+  :root { --sidebar-w: 220px; }  /* Smaller sidebar on tight laptops */
+  .page.active { padding: 1.25rem; }
+  .status-grid { grid-template-columns: repeat(3, 1fr); }
   .two-col { grid-template-columns: 1fr 1fr; }
   .settings-grid { grid-template-columns: 1fr 1fr; }
   .week-overview { grid-template-columns: repeat(5, 1fr); }
+
+  /* ── 1024px Weekly table fix: main width = 1024-220 = 804px
+     Table min-width is 700px (layout.css §9) — fits with scroll wrapper */
+  .weekly-table-wrap {
+    overflow-x: auto;
+  }
 }
 
 /* ── 1280px: Standard laptop ─────────────────────────────*/
@@ -558,8 +566,10 @@ a {
   }
 }
 
-/* ── 25. Universal Mobile (≤ 768px) — Critical Fixes ────────*/
-@media (max-width: 768px) {
+/* ── 25. Universal Mobile (≤ 899px) — Critical Fixes ────────
+   Updated breakpoint from 768px to 899px to match sidebar breakpoint.
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 899px) {
   /* Prevent text overflow everywhere */
   * {
     -webkit-hyphens: auto;
@@ -646,6 +656,9 @@ a {
   /* Two-column → single */
   .two-col { grid-template-columns: 1fr !important; }
   .settings-grid { grid-template-columns: 1fr !important; }
+
+  /* Table overflow on mobile: ensure scrollable */
+  .weekly-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
   /* Status grid */
   .status-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem; }
@@ -781,19 +794,24 @@ textarea {
   box-sizing: border-box;
 }
 
-/* ── 34. Z-Index Stack (explicit, no conflicts) ──────────────
-   IMPORTANT: #floatingDock z-index is managed by floating-dock.css (9000+).
-   Do NOT override it here — this caused the dock panel to be hidden.
+/* ── 34. Z-Index Stack ── AUTHORITATIVE SOURCE: layout.css §11 ──
+   These values mirror layout.css CSS custom properties.
+   layout.css §11 uses var(--z-*) tokens; these are the fallback numbers.
    ─────────────────────────────────────────────────────────── */
-.loading-screen   { z-index: 9999; }
-.sidebar-overlay  { z-index: 98;   }
-.sidebar          { z-index: 100;  }
-.mobile-menu-btn  { z-index: 150;  }
-/* NOTE: #floatingDock z-index intentionally NOT set here — see floating-dock.css */
-.ai-modal         { z-index: 10000; }
-.modal-overlay    { z-index: 500;  }
+.loading-screen         { z-index: 99999; }  /* --z-loading */
+.sidebar-overlay        { z-index: 98;    }  /* --z-sidebar-overlay */
+.sidebar                { z-index: 100;   }  /* --z-sidebar */
+.mobile-menu-btn        { z-index: 150;   }  /* --z-mobile-btn */
+.modal-overlay          { z-index: 500;   }  /* --z-modal-overlay */
 .toast-container,
-.notification-container { z-index: 1000; }
+.notification-container { z-index: 1000;  }  /* --z-notification */
+.modal                  { z-index: 2000;  }  /* --z-modal */
+#panelOverlay           { z-index: 3000;  }  /* --z-panel-overlay */
+#blockPanel,
+#guidePanel             { z-index: 3001;  }  /* --z-panel */
+#guideOverlay           { z-index: 3000;  }  /* --z-panel-overlay */
+/* NOTE: #floatingDock z-index (9000) managed by floating-dock.css + layout.css */
+.ai-modal               { z-index: 10000; }  /* --z-ai-modal */
 
 /* ── 35. Minimum Tap Target Sizes (WCAG 2.5.5) ───────────────*/
 button,
