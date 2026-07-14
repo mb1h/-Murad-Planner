@@ -101,6 +101,9 @@ const WorkspaceState = {
   speechRecognition: null,
   ttsEnabled: false,
   currentMode: 'chat', // chat | research | deep-think | study-coach | exam-prep | flashcards | mindmap
+  // Session 13: track whether first message has been sent in the current conversation
+  // Suggestions are hidden after the first send, never shown again until new conversation
+  _chatHasSentMessage: false,
 };
 
 /* ============================================================
@@ -522,6 +525,11 @@ function renderMessage(msg, index) {
 }
 
 function renderWelcomeScreen() {
+  // SESSION 13: If first message already sent in this session, show empty state (no suggestions)
+  if (WorkspaceState._chatHasSentMessage) {
+    return ''; // Suggestions permanently hidden for this conversation
+  }
+
   const userName = settings.userName || 'Learner';
   const suggestions = [
     { icon: 'fa-calendar-alt', text: t('ai.workspace.sugg2'), prompt: 'Create an optimized study plan for today based on my current schedule.' },
@@ -707,11 +715,16 @@ function editUserMessage(index) {
 function aiNewChat() {
   WorkspaceState.currentConvId = null;
   WorkspaceState.attachments = [];
+  // SESSION 13: Reset suggestion-hide state — new conversation shows suggestions again
+  WorkspaceState._chatHasSentMessage = false;
   renderAIWorkspacePage();
 }
 
 function loadConversation(id) {
   WorkspaceState.currentConvId = id;
+  // If the loaded conversation already has messages, mark as sent so suggestions stay hidden
+  const conv = AIConversations.getById(id);
+  WorkspaceState._chatHasSentMessage = !!(conv && conv.messages && conv.messages.length > 0);
   renderAIWorkspacePage();
   closeMobileAISidebar();
 }
@@ -741,6 +754,18 @@ async function sendAIMessage(overrideText) {
   // ✅ FIX: Clear only agentPreviewsBar (single display point)
   const previewBar = document.getElementById('agentPreviewsBar');
   if (previewBar) { previewBar.className = 'agent-previews-bar'; previewBar.innerHTML = ''; }
+
+  // SESSION 13: Hide suggestion cards on first message — never show again until new conversation
+  if (!WorkspaceState._chatHasSentMessage) {
+    WorkspaceState._chatHasSentMessage = true;
+    const welcome = document.querySelector('.ai-welcome');
+    if (welcome) {
+      welcome.classList.add('suggestions-hiding');
+      setTimeout(() => {
+        if (welcome.parentNode) welcome.remove();
+      }, 320);
+    }
+  }
 
   // Build message content — document text is appended for context
   let messageContent = text;
@@ -992,13 +1017,107 @@ function setAIMode(mode) {
   renderAIWorkspacePage();
 }
 
-// Model selector
+// Model selector — PORTAL IMPLEMENTATION
+// The dropdown is rendered into document.body with position:fixed so it is NEVER
+// clipped by any overflow:hidden parent, and always sits above suggestion cards.
+const _MODEL_PORTAL_ID = 'aiModelDropdownPortal';
+
+function _buildModelPortal() {
+  // Remove stale portal
+  const existing = document.getElementById(_MODEL_PORTAL_ID);
+  if (existing) existing.remove();
+
+  const provider = AIProviders.getActiveProvider();
+  const model = AIProviders.getActiveModel();
+  const providers = AIProviders.getEnabled();
+
+  const portal = document.createElement('div');
+  portal.id = _MODEL_PORTAL_ID;
+  portal.className = 'ai-model-dropdown-portal';
+  portal.innerHTML = `
+    ${providers.map(p => `
+      <div class="ai-model-group">
+        <div class="ai-model-group-label">
+          <i class="fas ${p.icon || 'fa-robot'}"></i> ${p.name}
+          ${!p.apiKey ? `<span class="no-key-badge">No Key</span>` : ''}
+        </div>
+        ${(p.models || []).map(m => `
+          <button class="ai-model-option ${model?.id === m.id ? 'active' : ''}"
+                  onclick="selectModel('${p.id}', '${m.id}')">
+            <span class="model-name">${m.name}</span>
+            <span class="model-ctx">${m.contextWindow ? (m.contextWindow/1000).toFixed(0)+'k ctx' : ''}</span>
+          </button>
+        `).join('')}
+      </div>
+    `).join('')}
+    <div class="ai-model-dropdown-footer">
+      <button onclick="showAIPage('ai-settings', null); closeModelDropdown()">
+        <i class="fas fa-cog"></i> Provider Settings
+      </button>
+    </div>
+  `;
+  document.body.appendChild(portal);
+  return portal;
+}
+
+function _positionModelPortal(btn) {
+  const portal = document.getElementById(_MODEL_PORTAL_ID);
+  if (!portal || !btn) return;
+  const rect = btn.getBoundingClientRect();
+  const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
+
+  portal.style.position = 'fixed';
+  portal.style.zIndex = '2147483647'; // max z-index — above everything
+  portal.style.maxHeight = '400px';
+  portal.style.overflowY = 'auto';
+
+  // Position: open UPWARD if button is in lower half of screen
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const spaceAbove = rect.top;
+  const portalHeight = Math.min(400, portal.scrollHeight || 300);
+
+  if (spaceBelow >= portalHeight || spaceBelow >= spaceAbove) {
+    // Open downward
+    portal.style.top = (rect.bottom + 6) + 'px';
+    portal.style.bottom = 'auto';
+  } else {
+    // Open upward
+    portal.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+    portal.style.top = 'auto';
+  }
+
+  if (isRTL) {
+    portal.style.left = Math.max(8, rect.left) + 'px';
+    portal.style.right = 'auto';
+  } else {
+    const rightEdge = window.innerWidth - rect.right;
+    portal.style.right = Math.max(8, rightEdge) + 'px';
+    portal.style.left = 'auto';
+  }
+  portal.style.width = '300px';
+}
+
 function toggleModelDropdown() {
-  const dd = document.getElementById('aiModelDropdown');
-  if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  const existing = document.getElementById(_MODEL_PORTAL_ID);
+  if (existing) {
+    closeModelDropdown();
+    return;
+  }
+  const btn = document.querySelector('#aiModelSelector .ai-model-btn');
+  const portal = _buildModelPortal();
+  _positionModelPortal(btn);
+  portal.style.display = 'block';
+
+  // Close on scroll or resize
+  const _close = () => closeModelDropdown();
+  window.addEventListener('scroll', _close, { once: true, passive: true });
+  window.addEventListener('resize', _close, { once: true, passive: true });
 }
 
 function closeModelDropdown() {
+  const portal = document.getElementById(_MODEL_PORTAL_ID);
+  if (portal) portal.remove();
+  // Also hide legacy inline dropdown if present
   const dd = document.getElementById('aiModelDropdown');
   if (dd) dd.style.display = 'none';
 }
@@ -1011,7 +1130,10 @@ function selectModel(providerId, modelId) {
 }
 
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('#aiModelSelector')) closeModelDropdown();
+  // Close model portal when clicking outside model selector OR portal itself
+  if (!e.target.closest('#aiModelSelector') && !e.target.closest('#' + _MODEL_PORTAL_ID)) {
+    closeModelDropdown();
+  }
 });
 
 // Conversation actions

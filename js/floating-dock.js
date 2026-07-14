@@ -239,7 +239,8 @@
     const dock = document.getElementById('floatingDock');
     if (!dock) return;
     const isRTL = document.documentElement.getAttribute('dir') === 'rtl';
-    const isMobile = window.innerWidth < 768;
+    // FIX: use 900px breakpoint (consistent with layout.css --bp-mobile: 899px)
+    const isMobile = window.innerWidth < 900;
 
     dock.style.bottom = '24px';
     dock.style.right = isRTL ? 'auto' : '24px';
@@ -249,11 +250,13 @@
     if (panel) {
       if (isMobile) {
         panel.style.width = '100vw';
-        panel.style.height = '85vh';
-        panel.style.bottom = '80px';
+        // FIX: use dvh for correct behavior when keyboard is open on iOS/Android
+        panel.style.height = CSS.supports('height', '85dvh') ? '85dvh' : '85vh';
+        panel.style.bottom = '0';
         panel.style.right = isRTL ? 'auto' : '0';
         panel.style.left = isRTL ? '0' : 'auto';
         panel.style.borderRadius = '20px 20px 0 0';
+        panel.style.paddingBottom = 'max(16px, env(safe-area-inset-bottom, 0px))';
       } else {
         panel.style.width = '420px';
         panel.style.height = '600px';
@@ -261,6 +264,7 @@
         panel.style.right = isRTL ? 'auto' : '0';
         panel.style.left = isRTL ? '0' : 'auto';
         panel.style.borderRadius = '20px';
+        panel.style.paddingBottom = '';
       }
     }
   }
@@ -944,7 +948,8 @@
     if (!DockState.open) return;
     const panel = document.getElementById('dockPanelAI');
     if (!panel) return;
-    if (window.innerWidth < 768 && window.visualViewport) {
+    // FIX: use 900px breakpoint (consistent with layout.css)
+    if (window.innerWidth < 900 && window.visualViewport) {
       const vvh = window.visualViewport.height;
       // Use 90% of visible viewport height when keyboard is open
       panel.style.height = Math.floor(vvh * 0.90) + 'px';

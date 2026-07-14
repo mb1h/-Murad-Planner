@@ -1333,3 +1333,274 @@ body::before {
     height: auto !important;
   }
 }
+
+/* ============================================================
+   §28 — REAL MOBILE CHAT UI (ChatGPT-style)
+   Session 13 fix: proper mobile interface, not scaled-down desktop.
+   ============================================================ */
+
+/* === SUGGESTIONS: only visible before first message === */
+.ai-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem;
+  min-height: 100%;
+  text-align: center;
+}
+
+/* Suggestions hide after first message sent */
+.ai-welcome.suggestions-hidden {
+  display: none !important;
+}
+
+/* Fade-out animation before removing */
+.ai-welcome.suggestions-hiding {
+  animation: suggestionsFadeOut 0.3s ease forwards;
+}
+
+@keyframes suggestionsFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-12px); }
+}
+
+/* === MOBILE: Full-screen chat interface === */
+@media (max-width: 899px) {
+
+  /* AI workspace fills entire screen — no margins, no padding */
+  .page#page-ai-workspace.active {
+    position: fixed !important;
+    inset: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  /* Workspace layout fills parent */
+  .page#page-ai-workspace.active .ai-workspace-layout {
+    flex: 1;
+    min-height: 0;
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  /* AI Main area: column flex, fills space */
+  .page#page-ai-workspace.active .ai-main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Top bar: compact on mobile, account for safe area + hamburger */
+  .page#page-ai-workspace.active .ai-topbar {
+    flex-shrink: 0;
+    padding: max(12px, calc(8px + env(safe-area-inset-top))) 12px 8px;
+    min-height: 52px;
+    /* On mobile, offset for the hamburger button that lives in .app-header */
+    padding-top: calc(max(12px, calc(8px + env(safe-area-inset-top))) + 52px);
+    border-bottom: 1px solid var(--ai-border, rgba(255,255,255,0.08));
+    overflow-x: auto;
+    overflow-y: visible;
+    white-space: nowrap;
+    scrollbar-width: none;
+    gap: 6px;
+  }
+  .page#page-ai-workspace.active .ai-topbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Messages: flex:1, scroll only this area */
+  .page#page-ai-workspace.active .ai-messages {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    padding: 12px 12px 16px;
+    scroll-behavior: smooth;
+  }
+
+  /* Composer / input area: fixed at bottom, always visible above keyboard */
+  .page#page-ai-workspace.active .ai-input-area {
+    flex-shrink: 0;
+    position: relative;  /* stays in flex flow — not position:fixed */
+    padding: 8px 8px max(12px, calc(8px + env(safe-area-inset-bottom)));
+    padding-inline-start: max(8px, calc(8px + env(safe-area-inset-left)));
+    padding-inline-end: max(8px, calc(8px + env(safe-area-inset-right)));
+    background: var(--bg-primary, #0d0e1a);
+    border-top: 1px solid var(--ai-border, rgba(255,255,255,0.08));
+    z-index: 10;
+  }
+
+  /* Suggestions: 1 column on small phones, 2 columns on tablets */
+  .ai-suggestions-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  /* Suggestion cards: full width, comfortable tap target */
+  .ai-suggestion-card {
+    width: 100%;
+    min-height: 48px;
+    font-size: 0.875rem;
+    text-align: start;
+    padding: 12px 16px;
+    justify-content: flex-start;
+    gap: 10px;
+    border-radius: 12px;
+  }
+
+  /* Welcome screen on mobile */
+  .ai-welcome {
+    padding: 1.5rem 1rem;
+    gap: 1rem;
+  }
+
+  .ai-welcome-title {
+    font-size: 1.4rem;
+  }
+
+  .ai-welcome-subtitle {
+    font-size: 0.9rem;
+    opacity: 0.7;
+  }
+
+  /* Mode tabs: scrollable row */
+  .ai-mode-tabs {
+    display: flex !important;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 6px;
+    padding-bottom: 2px;
+    flex-shrink: 0;
+  }
+  .ai-mode-tabs::-webkit-scrollbar { display: none; }
+
+  .ai-mode-tab {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    border-radius: 20px;
+  }
+
+  /* Model selector: compact */
+  .ai-model-btn {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+    gap: 6px;
+    flex-shrink: 0;
+    max-width: 160px;
+  }
+  .ai-model-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Message bubbles on mobile */
+  .ai-message {
+    max-width: 100% !important;
+  }
+
+  .ai-message-bubble {
+    max-width: 85vw;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+  }
+
+  .ai-message.user .ai-message-bubble {
+    font-size: 0.9rem;
+  }
+
+  /* Composer textarea */
+  .agent-input-textarea,
+  #aiInputTextarea {
+    font-size: 16px !important; /* Prevent iOS zoom on focus */
+    min-height: 44px;
+  }
+
+  /* Agent toolbar (send button area): compact */
+  .agent-toolbar {
+    gap: 6px;
+  }
+
+  .agent-send-btn {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* Preview bar (attachments) */
+  .agent-previews-bar {
+    padding: 4px 0;
+  }
+
+  /* Model picker portal on mobile: bottom sheet style */
+  #aiModelDropdownPortal {
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 65dvh !important;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+    animation: modelPortalBottomSheet 0.25s ease !important;
+  }
+
+  @keyframes modelPortalBottomSheet {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+  }
+}
+
+/* === Tablet (768-1024px): 2-column suggestions, sidebar visible === */
+@media (min-width: 900px) and (max-width: 1024px) {
+  .ai-suggestions-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .ai-topbar {
+    padding-top: max(10px, calc(10px + env(safe-area-inset-top)));
+  }
+}
+
+/* === KEYBOARD AWARENESS on mobile ===
+   When virtual keyboard opens, visualViewport shrinks.
+   The JS in floating-dock.js handles dvh resize.
+   CSS fallback: ensure min-height doesn't trap the layout.
+*/
+@supports (height: 100dvh) {
+  @media (max-width: 899px) {
+    .page#page-ai-workspace.active {
+      height: 100dvh !important;
+    }
+  }
+}
+
+/* === PREVENT BODY SCROLL when AI workspace is open on mobile === */
+@media (max-width: 899px) {
+  body:has(#page-ai-workspace.active) {
+    overflow: hidden;
+    height: 100dvh;
+  }
+}
+

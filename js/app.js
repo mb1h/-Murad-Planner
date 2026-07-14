@@ -36,10 +36,23 @@ function initLoadingScreen() {
     if (i >= steps.length) {
       clearInterval(interval);
       setTimeout(() => {
-        screen.classList.add('fade-out');
-        setTimeout(() => { screen.style.display = 'none'; }, 600);
+        // FIX BUG 1: Synchronously remove pointer events + start opacity fade
+        // THEN set display:none quickly (300ms) BEFORE app content is visible.
+        // This eliminates the 600ms window where a dark overlay sat on top of rendered content.
+        screen.style.transition = 'opacity 0.25s ease';
+        screen.style.opacity = '0';
+        screen.style.pointerEvents = 'none';
+        // Start app immediately while screen fades out — content renders behind transparent overlay
         initApp();
-      }, 300);
+        // Remove from render tree after fade completes (shorter than before: 300ms not 600ms)
+        setTimeout(() => {
+          screen.style.display = 'none';
+          // Reset inline styles so CSS classes work correctly on next use (PDF export)
+          screen.style.opacity = '';
+          screen.style.transition = '';
+          screen.style.pointerEvents = '';
+        }, 300);
+      }, 200);
       return;
     }
     bar.style.width = steps[i].pct + '%';
@@ -793,13 +806,29 @@ function openBlockPanel(blockId) {
   document.getElementById('panelOutputs').value = block.outputs || '';
   if (document.getElementById('panelSound')) document.getElementById('panelSound').value = block.sound || '';
 
-  document.getElementById('blockPanel').classList.add('open');
-  document.getElementById('panelOverlay').classList.add('active');
+  // FIX BUG 1: Remove inline display:none before adding .open class
+  const bp = document.getElementById('blockPanel');
+  const po = document.getElementById('panelOverlay');
+  bp.style.display = '';
+  po.style.display = '';
+  // Force a reflow so the transition fires from the off-screen position
+  void bp.offsetWidth;
+  bp.classList.add('open');
+  po.classList.add('active');
 }
 
 function closeBlockPanel() {
-  document.getElementById('blockPanel').classList.remove('open');
-  document.getElementById('panelOverlay').classList.remove('active');
+  const bp = document.getElementById('blockPanel');
+  const po = document.getElementById('panelOverlay');
+  bp.classList.remove('open');
+  po.classList.remove('active');
+  // Re-hide via display:none after transition completes so it doesn't render behind content
+  setTimeout(() => {
+    if (!bp.classList.contains('open')) {
+      bp.style.display = 'none';
+      po.style.display = 'none';
+    }
+  }, 350);
   currentPanelBlockId = null;
 }
 
@@ -1365,20 +1394,27 @@ function toggleUserGuide() {
 function openUserGuide() {
   const panel = document.getElementById('guidePanel');
   const overlay = document.getElementById('guideOverlay');
-  const content = document.getElementById('guideContent');
-  
+  // FIX BUG 1: Remove inline display:none before adding .active class
+  panel.style.display = '';
+  overlay.style.display = '';
+  void panel.offsetWidth; // Force reflow so transform transition fires correctly
   panel.classList.add('active');
   overlay.classList.add('active');
-  
   switchGuideTab('overview', document.querySelector('.guide-tab'));
 }
 
 function closeUserGuide() {
   const panel = document.getElementById('guidePanel');
   const overlay = document.getElementById('guideOverlay');
-  
   panel.classList.remove('active');
   overlay.classList.remove('active');
+  // Re-hide via display:none after transition completes
+  setTimeout(() => {
+    if (!panel.classList.contains('active')) {
+      panel.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+  }, 450);
 }
 
 function switchGuideTab(tabName, tabElement) {
