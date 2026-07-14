@@ -63,14 +63,18 @@
 html {
   scroll-behavior: smooth;
   font-size: 16px;
+  /* ✅ SCROLL FIX: html/body never scroll — only inner containers scroll */
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   font-family: var(--font-main);
   background: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
+  /* ✅ SCROLL FIX: body is a fixed full-height shell */
+  height: 100%;
+  overflow: hidden;
   direction: rtl;
 }
 
@@ -166,31 +170,24 @@ body[data-lang="en"] {
   font-size: 0.9rem;
 }
 
-/* === SIDEBAR === */
+/* === SIDEBAR — Visual styles only (layout handled by layout.css §3-4) === */
 .sidebar {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--sidebar-w);
+  /* position, top, bottom, width, z-index, transition → layout.css §3 */
   background: var(--bg-secondary);
   border-left: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
-  z-index: 100;
-  transition: var(--transition);
   backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 [data-lang="en"] .sidebar {
-  right: auto;
-  left: 0;
   border-left: none;
   border-right: 1px solid var(--glass-border);
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: var(--sidebar-w-collapsed, 70px);
 }
 
 .sidebar.collapsed .logo-title,
@@ -402,36 +399,23 @@ body[data-lang="en"] {
   border-color: var(--accent-primary);
 }
 
-/* === MAIN CONTENT === */
+/* === MAIN CONTENT — layout handled by layout.css §7, only visual overrides here === */
 .main-content {
-  margin-right: var(--sidebar-w);
-  min-height: 100vh;
-  padding: 2rem;
-  transition: var(--transition);
+  /* margin-inline-end, height, overflow, display, flex-direction → layout.css §7 */
+  padding: 0;
+  /* Keep background transparent — body::before handles the gradient */
 }
 
-[data-lang="en"] .main-content {
-  margin-right: 0;
-  margin-left: var(--sidebar-w);
-}
-
-.sidebar.collapsed~.main-content {
-  margin-right: 70px;
-}
-
-[data-lang="en"] .sidebar.collapsed~.main-content {
-  margin-left: 70px;
-  margin-right: 0;
-}
-
-/* === PAGES === */
+/* === PAGES — base rules in layout.css §8; visual overrides here === */
 .page {
-  display: none;
+  /* display:none set by layout.css §8 */
   animation: fadeIn 0.4s ease;
 }
 
 .page.active {
-  display: block;
+  /* display, flex:1, min-height:0, overflow-y, padding → layout.css §8 */
+  /* scrollbar → layout.css §18 */
+  /* Keep only visual overrides here */
 }
 
 @keyframes fadeIn {
@@ -2129,31 +2113,23 @@ body[data-lang="en"] {
   }
 }
 
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(100%);
-  }
+/* Mobile responsive — layout.css §4,§7,§8,§15 handle core layout.
+   Only component-specific overrides remain here. */
+@media (max-width: 899px) {
+  /* sidebar drawer: transform handled by layout.css §4 */
 
-  [data-lang="en"] .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .main-content {
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-    padding: 1rem;
-  }
-
+  /* week overview: 2 columns on phone */
   .week-overview {
     grid-template-columns: repeat(2, 1fr);
   }
 
   .pec-grid {
     grid-template-columns: 1fr;
+  }
+  
+  /* page header: margin-top for hamburger button (layout.css §8 handles padding-top) */
+  .page-header {
+    margin-top: 0; /* layout.css §8 already adds padding-top for hamburger */
   }
 }
 
@@ -2180,49 +2156,27 @@ body::before {
   pointer-events: none;
 }
 
-/* === MOBILE HAMBURGER MENU === */
+/* === MOBILE HAMBURGER MENU — visual styles (layout in layout.css §6) === */
 .mobile-menu-btn {
-  display: none;
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  z-index: 150;
-  width: 42px;
-  height: 42px;
+  /* display, position, z-index, size, inset-inline-end → layout.css §6 */
+  /* Visual styles: */
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-primary);
-  align-items: center;
-  justify-content: center;
   font-size: 1rem;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-[data-lang="ar"] .mobile-menu-btn {
-  left: auto;
-  right: 1rem;
-}
+/* RTL positioning handled by layout.css §6 via inset-inline-end */
 
-@media (max-width: 768px) {
-  .mobile-menu-btn {
-    display: flex;
-  }
-
-  .page-header {
-    margin-top: 3.5rem;
-  }
-}
-
-/* === OVERLAY FOR MOBILE SIDEBAR === */
+/* === OVERLAY FOR MOBILE SIDEBAR — layout in layout.css §5 === */
 .sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99;
+  /* position, inset, display, z-index, backdrop-filter → layout.css §5 */
+  /* Visual: */
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
 }
 
 .sidebar-overlay.active {
@@ -2262,6 +2216,7 @@ body::before {
 }
 
 /* ===== USER GUIDE SYSTEM ===== */
+/* Default floating style (kept for backwards compat, not used since guide moved to header) */
 .guide-btn {
   position: fixed;
   bottom: 2rem;
@@ -2281,6 +2236,67 @@ body::before {
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
+}
+
+/* BUG 3 FIX: Guide button in sidebar header — positioned at top, always visible */
+.sidebar-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.guide-header-btn {
+  position: static !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: auto !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-secondary) !important;
+  font-size: 1rem !important;
+  backdrop-filter: none !important;
+  border: 1px solid transparent !important;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.guide-header-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: var(--glass-bg) !important;
+  border-color: var(--glass-border) !important;
+  color: var(--accent-primary) !important;
+}
+
+/* BUG #5 FIX: When guide button is inside .sidebar-actions, override floating position */
+.sidebar-actions .guide-btn {
+  position: static;
+  bottom: auto;
+  left: auto;
+  z-index: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  backdrop-filter: none;
+  border: 1px solid transparent;
+}
+
+.sidebar-actions .guide-btn:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--accent-primary);
 }
 
 .guide-btn:hover {
@@ -2574,4 +2590,443 @@ body::before {
   .guide-content {
     padding: 1rem;
   }
+}
+
+/* ============================================================
+   AI SYSTEM INTEGRATION STYLES
+   ============================================================ */
+
+/* AI nav section in sidebar */
+.nav-section:last-child .nav-item.ai-nav {
+  position: relative;
+}
+
+.nav-item.ai-nav::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 0 2px 2px 0;
+  transition: height 0.3s ease;
+}
+
+[dir="rtl"] .nav-item.ai-nav::before {
+  left: auto;
+  right: 0;
+  border-radius: 2px 0 0 2px;
+}
+
+.nav-item.ai-nav:hover::before,
+.nav-item.ai-nav.active::before {
+  height: 60%;
+}
+
+/* Sidebar label for AI section */
+.nav-section .nav-label {
+  background: none;
+}
+
+/* ✅ SCROLL FIX: AI Workspace — flex column that fills the shell, overflow hidden */
+/* Only .ai-messages inside scrolls. Sidebar + topbar + input are fixed */
+.page#page-ai-workspace {
+  padding: 0;
+}
+
+.page#page-ai-workspace.active {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;  /* NO page-level scroll — only inner .ai-messages scrolls */
+  padding: 0;        /* Override the default .page.active padding:2rem */
+}
+
+/* AI sub-pages: independent scroll within their own container */
+.page#page-ai-settings,
+.page#page-ai-personality,
+.page#page-ai-automation,
+.page#page-ai-analytics {
+  padding: 0;
+}
+
+.page#page-ai-settings.active,
+.page#page-ai-personality.active,
+.page#page-ai-automation.active,
+.page#page-ai-analytics.active {
+  display: block;
+  padding: 24px;  /* override default 2rem with 24px for AI sub-pages */
+  overflow-y: auto;  /* independent scroll per sub-page */
+}
+
+/* Loading state improvements */
+.loading-bar {
+  transition: width 0.2s ease;
+}
+
+/* AI nav items glow effect */
+.nav-item.ai-nav:hover {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08)) !important;
+  color: #818cf8 !important;
+}
+
+.nav-item.ai-nav.active {
+  background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15)) !important;
+  color: #818cf8 !important;
+}
+
+/* Fix toggle slider for AI */
+.ai-provider-actions .toggle,
+.ai-automation-header .toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.ai-provider-actions .toggle input,
+.ai-automation-header .toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.ai-provider-actions .toggle-slider,
+.ai-automation-header .toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--glass-border);
+  border-radius: 34px;
+  transition: .4s;
+}
+
+.ai-provider-actions .toggle-slider:before,
+.ai-automation-header .toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+.ai-provider-actions .toggle input:checked + .toggle-slider,
+.ai-automation-header .toggle input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+}
+
+.ai-provider-actions .toggle input:checked + .toggle-slider:before,
+.ai-automation-header .toggle input:checked + .toggle-slider:before {
+  transform: translateX(18px);
+}
+
+/* Flashcard and mindmap special UI */
+.flashcard-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.flashcard {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  perspective: 1000px;
+}
+
+.flashcard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(99,102,241,0.2);
+}
+
+.flashcard-front {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--accent-primary);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.flashcard-back {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Mind map container */
+.mindmap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+}
+
+.mindmap-center {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 0 30px rgba(99,102,241,0.4);
+}
+
+.mindmap-branches {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mindmap-branch {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.mindmap-branch:hover {
+  border-color: var(--accent-primary);
+  transform: scale(1.05);
+}
+
+/* ===== LOADING SCREEN AI STEP ===== */
+#loading-msg.ai-loading {
+  color: #818cf8;
+  font-weight: 600;
+}
+
+/* ===== PROVIDER ICONS ===== */
+.fa-x {
+  font-style: normal;
+  font-weight: 900;
+}
+
+.fa-x::before {
+  content: "𝕏";
+  font-style: normal;
+}
+
+/* ===== AI WORKSPACE INTEGRATION — Session 4 ===== */
+
+/* ── Enhanced Composer ─────────────────────────────────────── */
+.ai-input-area {
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
+  padding: 12px 16px 8px;
+}
+
+.composer-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--surface-1, rgba(255,255,255,0.04));
+  border: 1.5px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 8px 8px 8px 10px;
+  transition: border-color 0.2s;
+}
+.composer-row:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.composer-tools-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.composer-tool {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+.composer-tool:hover,
+.composer-tool.recording {
+  background: var(--accent-primary-muted, rgba(99,102,241,0.15));
+  color: var(--accent-primary);
+}
+.composer-tool.recording {
+  animation: pulse-mic 1s infinite;
+  color: #ef4444;
+}
+@keyframes pulse-mic {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+
+.composer-textarea-wrap {
+  flex: 1;
+  position: relative;
+}
+.composer-textarea {
+  width: 100%;
+  min-height: 44px;
+  max-height: 240px;
+  resize: none;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  padding: 6px 4px;
+  outline: none;
+  font-family: inherit;
+  overflow-y: auto;
+}
+.composer-textarea::placeholder { color: var(--text-muted); }
+
+.composer-send {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: none;
+  background: var(--accent-primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s, transform 0.1s;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+.composer-send:hover { background: var(--accent-hover, #4f46e5); transform: scale(1.06); }
+.composer-send.stop  { background: #ef4444; }
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 2px 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Attachment Previews ───────────────────────────────────── */
+.composer-previews,
+.ai-attachments-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 2px;
+}
+.composer-preview-chip,
+.ai-attachment-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 4px 8px 4px 6px;
+  font-size: 0.82rem;
+  max-width: 220px;
+}
+.composer-preview-chip button,
+.ai-attachment-chip button {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  padding: 0 2px; font-size: 0.8rem; line-height: 1;
+}
+.composer-preview-chip button:hover { color: #ef4444; }
+.composer-preview-thumb,
+.attachment-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.image-chip { border-color: #6366f133; }
+.audio-chip { border-color: #10b98133; }
+.file-chip  { border-color: var(--glass-border); }
+
+/* ── Voice Recording Bar ───────────────────────────────────── */
+.voice-record-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  animation: fadein 0.2s ease;
+}
+.voice-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: pulse-dot 1s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+#voiceWaveCanvas { border-radius: 4px; }
+.voice-rec-timer { font-size: 0.88rem; color: var(--text-primary); min-width: 36px; }
+.voice-rec-stop {
+  background: #ef4444; color: #fff; border: none; border-radius: 8px;
+  padding: 4px 10px; cursor: pointer; font-size: 0.82rem; display: flex; align-items: center; gap: 4px;
+}
+.voice-rec-cancel {
+  background: transparent; border: 1px solid var(--glass-border); border-radius: 8px;
+  padding: 4px 8px; cursor: pointer; color: var(--text-muted); font-size: 0.82rem;
+}
+
+/* ── Audio Bubble ──────────────────────────────────────────── */
+.ai-audio-bubble {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  max-width: 320px;
+}
+.ai-audio-bubble i { color: var(--accent-primary); }
+.audio-duration { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+
+/* ── Remove old small textarea style collisions ────────────── */
+.ai-textarea {
+  min-height: 44px;
+  max-height: 200px;
+}
+
+@media (max-width: 600px) {
+  .composer-tools-left { flex-direction: row; }
+  .composer-row { flex-wrap: wrap; }
 }

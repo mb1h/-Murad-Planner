@@ -3,16 +3,27 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Murad Learning Planner</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <!-- Unified Layout System — loads FIRST as the architectural foundation -->
+  <link rel="stylesheet" href="css/layout.css" />
+  <!-- Cross-Browser Compatibility -->
+  <link rel="stylesheet" href="css/cross-browser.css" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/pdf-report.css" />
+  <link rel="stylesheet" href="css/ai-workspace.css" />
+  <link rel="stylesheet" href="css/floating-dock.css" />
+  <link rel="stylesheet" href="css/ai-enhancements.css" />
+  <link rel="stylesheet" href="css/stabilization.css" />
+  <!-- AI Agent v5 — modern chat UI -->
+  <link rel="stylesheet" href="css/ai-agent.css" />
 </head>
 
 <body>
@@ -31,58 +42,88 @@
   </div>
 
   <!-- Mobile Menu Button -->
-  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()">
-    <i class="fas fa-bars"></i>
+  <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileSidebar()"
+    aria-label="فتح القائمة" aria-expanded="false" aria-controls="sidebar">
+    <i class="fas fa-bars" aria-hidden="true"></i>
   </button>
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileSidebar()"
+    role="button" aria-label="إغلاق القائمة"></div>
 
   <!-- ===== SIDEBAR ===== -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar" id="sidebar" role="navigation" aria-label="قائمة التنقل">
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon-sm"><i class="fas fa-brain"></i></div>
         <span class="logo-title">Murad<span>Planner</span></span>
       </div>
-      <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">
-        <i class="fas fa-bars"></i>
-      </button>
+      <div class="sidebar-header-actions">
+        <button class="btn-icon guide-header-btn" id="guideBtn" onclick="toggleUserGuide()" title="User Guide" data-i18n-title="dock.userGuide" aria-label="دليل المستخدم">
+          <i class="fas fa-question-circle" aria-hidden="true"></i>
+        </button>
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" aria-label="طي القائمة">
+          <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+      </div>
     </div>
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" aria-label="التنقل الرئيسي">
       <div class="nav-section">
         <span class="nav-label" data-i18n="nav.main">الرئيسية</span>
-        <a href="#" class="nav-item active" onclick="showPage('dashboard', this)">
+        <a href="#" class="nav-item active" onclick="showPage('dashboard', this)" aria-current="page" role="menuitem">
           <i class="fas fa-th-large"></i>
           <span data-i18n="nav.dashboard">Dashboard</span>
         </a>
-        <a href="#" class="nav-item" onclick="showPage('weekly', this)">
+        <a href="#" class="nav-item" onclick="showPage('weekly', this)" role="menuitem">
           <i class="fas fa-calendar-week"></i>
           <span data-i18n="nav.weekly">الجدول الأسبوعي</span>
         </a>
       </div>
       <div class="nav-section">
         <span class="nav-label" data-i18n="nav.patterns">الأنماط</span>
-        <a href="#" class="nav-item pattern-a" onclick="showDayPattern('A', this)">
+        <a href="#" class="nav-item pattern-a" onclick="showDayPattern('A', this)" role="menuitem">
           <i class="fas fa-star"></i>
           <span data-i18n="nav.patternA">Pattern A - تعلم جديد</span>
         </a>
-        <a href="#" class="nav-item pattern-b" onclick="showDayPattern('B', this)">
+        <a href="#" class="nav-item pattern-b" onclick="showDayPattern('B', this)" role="menuitem">
           <i class="fas fa-dumbbell"></i>
           <span data-i18n="nav.patternB">Pattern B - ترسيخ</span>
         </a>
-        <a href="#" class="nav-item pattern-c" onclick="showDayPattern('C', this)">
+        <a href="#" class="nav-item pattern-c" onclick="showDayPattern('C', this)" role="menuitem">
           <i class="fas fa-link"></i>
           <span data-i18n="nav.patternC">Pattern C - دمج</span>
         </a>
-        <a href="#" class="nav-item pattern-d" onclick="showDayPattern('D', this)">
+        <a href="#" class="nav-item pattern-d" onclick="showDayPattern('D', this)" role="menuitem">
           <i class="fas fa-flag-checkered"></i>
           <span data-i18n="nav.patternD">Pattern D - إغلاق</span>
         </a>
       </div>
       <div class="nav-section">
         <span class="nav-label" data-i18n="nav.tools">الأدوات</span>
-        <a href="#" class="nav-item" onclick="showPage('settings', this)">
+        <a href="#" class="nav-item" onclick="showPage('settings', this)" role="menuitem">
           <i class="fas fa-cog"></i>
           <span data-i18n="nav.settings">الإعدادات</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label" data-i18n="nav.ai">🤖 AI System</span>
+        <a href="#" class="nav-item ai-nav" onclick="showAIPage('ai-workspace', this)" role="menuitem">
+          <i class="fas fa-comments"></i>
+          <span data-i18n="nav.ai.workspace">AI Workspace</span>
+        </a>
+        <a href="#" class="nav-item ai-nav" onclick="showAIPage('ai-analytics', this)" role="menuitem">
+          <i class="fas fa-chart-line"></i>
+          <span data-i18n="nav.ai.analytics">AI Analytics</span>
+        </a>
+        <a href="#" class="nav-item ai-nav" onclick="showAIPage('ai-automation', this)" role="menuitem">
+          <i class="fas fa-robot"></i>
+          <span data-i18n="nav.ai.automations">AI Automations</span>
+        </a>
+        <a href="#" class="nav-item ai-nav" onclick="showAIPage('ai-personality', this)" role="menuitem">
+          <i class="fas fa-user-circle"></i>
+          <span data-i18n="nav.ai.personality">AI Personality</span>
+        </a>
+        <a href="#" class="nav-item ai-nav" onclick="showAIPage('ai-settings', this)" role="menuitem">
+          <i class="fas fa-sliders-h"></i>
+          <span data-i18n="nav.ai.settings">AI Settings</span>
         </a>
       </div>
     </nav>
@@ -95,18 +136,18 @@
         </div>
       </div>
       <div class="sidebar-actions">
-        <button class="btn-icon" onclick="toggleLanguage()" title="تغيير اللغة">
-          <i class="fas fa-language"></i>
+        <button class="btn-icon" onclick="toggleLanguage()" title="تغيير اللغة" aria-label="تغيير اللغة">
+          <i class="fas fa-language" aria-hidden="true"></i>
         </button>
-        <button class="btn-icon" onclick="toggleTheme()" title="الوضع الليلي">
-          <i class="fas fa-moon" id="theme-icon"></i>
+        <button class="btn-icon" onclick="toggleTheme()" title="الوضع الليلي" aria-label="تغيير الوضع">
+          <i class="fas fa-moon" id="theme-icon" aria-hidden="true"></i>
         </button>
       </div>
     </div>
   </aside>
 
   <!-- ===== MAIN CONTENT ===== -->
-  <main class="main-content" id="mainContent">
+  <main class="main-content" id="mainContent" role="main" aria-label="محتوى التطبيق">
     <!-- ===== DASHBOARD PAGE ===== -->
     <section class="page active" id="page-dashboard">
       <div class="page-header">
@@ -219,6 +260,16 @@
             </h3>
           </div>
           <div id="weekStatsChart"></div>
+        </div>
+      </div>
+
+      <!-- AI Daily Intelligence Report Widget -->
+      <div class="dashboard-widget-section" style="margin-top: 1.5rem;">
+        <div id="aiDashboardWidget">
+          <div class="ai-widget-generating" style="display:flex;align-items:center;gap:0.75rem;padding:1.5rem;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);color:var(--text-secondary);">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p data-i18n="widget.loading" style="margin:0;">جارٍ تحميل تقرير الذكاء الاصطناعي...</p>
+          </div>
         </div>
       </div>
     </section>
@@ -476,6 +527,9 @@
               <button class="lang-btn" id="langEn" onclick="setLanguage('en')">
                 English 🇺🇸
               </button>
+              <button class="lang-btn" id="langId" onclick="setLanguage('id')" data-lang-btn="id">
+                Indonesia 🇮🇩
+              </button>
             </div>
           </div>
           <div class="setting-item">
@@ -521,11 +575,35 @@
         </div>
       </div>
     </section>
+    <!-- ===== AI WORKSPACE PAGE ===== -->
+    <section class="page" id="page-ai-workspace">
+      <!-- Rendered by renderAIWorkspacePage() -->
+    </section>
+
+    <!-- ===== AI SETTINGS PAGE ===== -->
+    <section class="page" id="page-ai-settings">
+      <!-- Rendered by renderAISettingsPage() -->
+    </section>
+
+    <!-- ===== AI PERSONALITY PAGE ===== -->
+    <section class="page" id="page-ai-personality">
+      <!-- Rendered by renderAIPersonalityPage() -->
+    </section>
+
+    <!-- ===== AI AUTOMATION PAGE ===== -->
+    <section class="page" id="page-ai-automation">
+      <!-- Rendered by renderAIAutomationPage() -->
+    </section>
+
+    <!-- ===== AI ANALYTICS PAGE ===== -->
+    <section class="page" id="page-ai-analytics">
+      <!-- Rendered by renderAIAnalyticsPage() -->
+    </section>
   </main>
 
   <!-- ===== BLOCK DETAILS PANEL ===== -->
-  <div class="panel-overlay" id="panelOverlay" onclick="closeBlockPanel()"></div>
-  <aside class="block-panel" id="blockPanel">
+  <div class="panel-overlay" id="panelOverlay" onclick="closeBlockPanel()" style="display:none"></div>
+  <aside class="block-panel" id="blockPanel" style="display:none">
     <div class="panel-header">
       <h3 data-i18n="panel.title">تفاصيل البلوك</h3>
       <button class="btn-icon" onclick="closeBlockPanel()">
@@ -626,14 +704,11 @@
   <!-- ===== TOAST NOTIFICATIONS ===== -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- ===== USER GUIDE BUTTON ===== -->
-  <button class="guide-btn" id="guideBtn" onclick="toggleUserGuide()" title="دليل الاستخدام">
-    <i class="fas fa-question-circle"></i>
-  </button>
+  <!-- ===== USER GUIDE BUTTON (moved to sidebar header — BUG #5) ===== -->
 
   <!-- ===== USER GUIDE MODAL ===== -->
-  <div class="guide-overlay" id="guideOverlay" onclick="closeUserGuide()"></div>
-  <aside class="guide-panel" id="guidePanel">
+  <div class="guide-overlay" id="guideOverlay" onclick="closeUserGuide()" style="display:none"></div>
+  <aside class="guide-panel" id="guidePanel" style="display:none">
     <div class="guide-header">
       <div class="guide-header-content">
         <div class="guide-icon"><i class="fas fa-book-open"></i></div>
@@ -678,7 +753,14 @@
   <!-- Hidden Container for PDF Rendering -->
   <div id="pdf-container" style="display: none; position: absolute; top: -9999px; left: -9999px; width: 210mm;"></div>
 
-  <script src="js/i18n.js"></script>
+  <!-- Cross-Browser Guard — must load FIRST, before any other script -->
+  <script src="js/cross-browser-guard.js"></script>
+  <!-- i18n System (load first) -->
+  <script src="js/i18n/ar.js"></script>
+  <script src="js/i18n/en.js"></script>
+  <script src="js/i18n/id.js"></script>
+  <script src="js/i18n/translator.js"></script>
+  <!-- Core App -->
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
   <script src="js/timer.js"></script>
@@ -686,6 +768,24 @@
   <script src="js/bidi.js"></script>
   <script src="js/export-pdf.js"></script>
   <script src="js/app.js"></script>
+  <!-- AI System -->
+  <script src="js/ai-providers.js"></script>
+  <script src="js/ai-agent.js"></script>
+  <!-- AI Agent Core — full tool executor -->
+  <script src="js/ai-agent-core.js"></script>
+  <script src="js/ai-engine.js"></script>
+  <script src="js/ai-provider-validator.js"></script>
+  <!-- AI Memory Engine: 3-Layer Memory (must load BEFORE context engine) -->
+  <script src="js/ai-memory-engine.js"></script>
+  <script src="js/ai-context-engine.js"></script>
+  <script src="js/ai-workspace.js"></script>
+  <!-- AI Workspace Integration: AIDocuments, VoiceRecorder, Composer, Vision -->
+  <script src="js/ai-workspace-integration.js"></script>
+  <!-- AI Enhancements (phases 2,6,7,8,9) -->
+  <script src="js/ai-enhancements.js"></script>
+  <!-- Floating Dock (must be last) -->
+  <script src="js/floating-dock.js"></script>
+  <script src="js/stabilization.js"></script>
 </body>
 
 </html>

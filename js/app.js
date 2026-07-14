@@ -22,11 +22,13 @@ function initLoadingScreen() {
   const screen = document.getElementById('loading-screen');
 
   const steps = [
-    { pct: 20, text: 'Loading data...' },
-    { pct: 45, text: 'Initializing UI...' },
-    { pct: 65, text: 'Setting up sounds...' },
-    { pct: 80, text: 'Building dashboard...' },
-    { pct: 100, text: 'Ready!' },
+    { pct: 15, text: 'Loading data...' },
+    { pct: 30, text: 'Initializing UI...' },
+    { pct: 50, text: 'Setting up sounds...' },
+    { pct: 65, text: 'Building dashboard...' },
+    { pct: 80, text: '🤖 Loading AI System...' },
+    { pct: 90, text: '🧠 Initializing AI Agents...' },
+    { pct: 100, text: '✨ Ready!' },
   ];
 
   let i = 0;
@@ -34,10 +36,23 @@ function initLoadingScreen() {
     if (i >= steps.length) {
       clearInterval(interval);
       setTimeout(() => {
-        screen.classList.add('fade-out');
-        setTimeout(() => { screen.style.display = 'none'; }, 600);
+        // FIX BUG 1: Synchronously remove pointer events + start opacity fade
+        // THEN set display:none quickly (300ms) BEFORE app content is visible.
+        // This eliminates the 600ms window where a dark overlay sat on top of rendered content.
+        screen.style.transition = 'opacity 0.25s ease';
+        screen.style.opacity = '0';
+        screen.style.pointerEvents = 'none';
+        // Start app immediately while screen fades out — content renders behind transparent overlay
         initApp();
-      }, 300);
+        // Remove from render tree after fade completes (shorter than before: 300ms not 600ms)
+        setTimeout(() => {
+          screen.style.display = 'none';
+          // Reset inline styles so CSS classes work correctly on next use (PDF export)
+          screen.style.opacity = '';
+          screen.style.transition = '';
+          screen.style.pointerEvents = '';
+        }, 300);
+      }, 200);
       return;
     }
     bar.style.width = steps[i].pct + '%';
@@ -60,6 +75,16 @@ function initApp() {
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission();
   }
+  // Initialize AI system (floating dock is now auto-initialized by floating-dock.js)
+  setTimeout(() => {
+    if (typeof AIAutomations !== 'undefined') AIAutomations.checkAndRunDue();
+    if (typeof AIContextEngine !== 'undefined' && typeof AIAgent !== 'undefined') {
+      // Upgrade AIAgent with new context engine
+      AIAgent.getAppContext = () => AIContextEngine.build();
+      AIAgent.buildSystemPrompt = (ctx) => AIContextEngine.buildSystemPrompt(ctx);
+      AIAgent.parseAndExecuteTools = (text) => AIActionEngine.parseAndExecute(text);
+    }
+  }, 500);
 }
 
 // ===== THEME =====
@@ -88,21 +113,80 @@ function toggleSidebar() {
 function toggleMobileSidebar() {
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebarOverlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('active');
+  const btn = document.getElementById('mobileMenuBtn');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('active', isOpen);
+  if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 
 
+// ===== SHARED AI PAGE RENDERERS (single source of truth) =====
+// Prevents duplication between showPage() and showAIPage().
+function _renderAIPage(pageId) {
+  const renderers = {
+    'ai-workspace':   () => typeof renderAIWorkspacePage   === 'function' && renderAIWorkspacePage(),
+    'ai-settings':    () => typeof renderAISettingsPage    === 'function' && renderAISettingsPage(),
+    'ai-personality': () => typeof renderAIPersonalityPage === 'function' && renderAIPersonalityPage(),
+    'ai-automation':  () => typeof renderAIAutomationPage  === 'function' && renderAIAutomationPage(),
+    'ai-analytics':   () => typeof renderAIAnalyticsPage   === 'function' && renderAIAnalyticsPage(),
+  };
+  if (renderers[pageId]) renderers[pageId]();
+}
+
 // ===== PAGE NAVIGATION =====
 function showPage(pageId, navEl) {
+  // Guard: pageId must be a non-empty string
+  if (!pageId || typeof pageId !== 'string') return;
+
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    n.removeAttribute('aria-current');
+  });
+
   const page = document.getElementById('page-' + pageId);
   if (page) page.classList.add('active');
-  if (navEl) navEl.classList.add('active');
-  if (pageId === 'settings') { renderSoundLibrary(); renderPerBlockSoundSettings(); loadSettingsUI(); }
-  if (pageId === 'dashboard') renderDashboard();
-  if (pageId === 'weekly') renderWeeklyTable();
+  if (navEl) {
+    navEl.classList.add('active');
+    navEl.setAttribute('aria-current', 'page');
+  }
+
+  // Render page-specific content (guarded with try/catch — never crash)
+  try {
+    if (pageId === 'settings') { renderSoundLibrary(); renderPerBlockSoundSettings(); loadSettingsUI(); }
+    if (pageId === 'dashboard') renderDashboard();
+    if (pageId === 'weekly') renderWeeklyTable();
+  } catch (e) {
+    console.error('[showPage] Render error for page:', pageId, e);
+  }
+
+  // Track current page for AI
+  window._currentAIPage = pageId;
+  try { if (typeof updateFloatingAIContext === 'function') updateFloatingAIContext(); } catch (e) {}
+
+  // ── Layout fix: hide AI workspace panel on non-AI pages ──
+  _syncWorkspaceVisibility(pageId);
+
+  // Handle AI pages via shared renderer
+  _renderAIPage(pageId);
+
+  // ── Cross-browser: close mobile sidebar after navigation ──
+  _closeMobileSidebar();
+
+  // ── Scroll the active page back to top ──
+  if (page) page.scrollTop = 0;
+}
+
+function _closeMobileSidebar() {
+  try {
+    if (window.innerWidth <= 900) {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+  } catch (e) {}
 }
 
 function showDayPattern(pattern, navEl) {
@@ -114,6 +198,96 @@ function goBackToWeekly() {
   showPage('weekly', null);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelector('.nav-item[onclick*="weekly"]')?.classList.add('active');
+}
+
+// ===== AI PAGE NAVIGATION =====
+function showAIPage(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const page = document.getElementById('page-' + pageId);
+  if (page) page.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+
+  // Track current page for AI context
+  window._currentAIPage = pageId;
+
+  // ── Layout fix: sync workspace visibility ──
+  _syncWorkspaceVisibility(pageId);
+
+  // Render specific AI pages via shared renderer (no duplicate map)
+  _renderAIPage(pageId);
+
+  // Update floating AI context
+  if (typeof updateFloatingAIContext === 'function') updateFloatingAIContext();
+
+  // Close mobile sidebar
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (window.innerWidth <= 768) {
+    sidebar?.classList.remove('open');
+    overlay?.classList.remove('active');
+  }
+}
+
+/**
+ * _syncWorkspaceVisibility — controls whether the AI workspace panel
+ * is visible. On non-AI pages the full workspace layout is hidden and
+ * only the floating dock icon remains. On ai-workspace the full layout
+ * is shown.
+ * Points 17-19: Fix layout overlap.
+ */
+function _syncWorkspaceVisibility(pageId) {
+  const AI_PAGES = ['ai-workspace', 'ai-settings', 'ai-personality', 'ai-automation', 'ai-analytics'];
+  const isAIPage = AI_PAGES.includes(pageId);
+  const isWorkspacePage = pageId === 'ai-workspace';
+
+  // The workspace layout container (rendered inside #page-ai-workspace)
+  // is already hidden because only one .page is active at a time.
+  // This function ensures any globally-injected workspace panels
+  // don't accidentally overlap non-AI pages.
+
+  // Hide any floating workspace panel that escaped its container
+  const floatingPanels = document.querySelectorAll(
+    '.ai-workspace-layout, .ai-workspace-panel, #aiWorkspaceFloatingPanel'
+  );
+  floatingPanels.forEach(el => {
+    // Only hide if the element is NOT inside the active page
+    const parentPage = el.closest('.page');
+    if (!parentPage || !parentPage.classList.contains('active')) {
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden', 'true');
+    } else {
+      el.style.display = '';
+      el.removeAttribute('aria-hidden');
+    }
+  });
+
+  // Point 17-19: Floating dock visibility
+  // - On ai-workspace: HIDE the floating dock (full workspace is shown)
+  // - On ALL other pages: SHOW the floating dock button
+  const floatingDock = document.getElementById('floatingDock') ||
+                       document.getElementById('floatingAIBtn') ||
+                       document.querySelector('.floating-ai-dock');
+  if (floatingDock) {
+    if (isWorkspacePage) {
+      // Hide on AI workspace page — the full workspace is already visible
+      floatingDock.style.display = 'none';
+    } else {
+      // Show on all other pages
+      floatingDock.style.display = '';
+    }
+  }
+
+  // Also call floating-dock's own visibility handler if available
+  if (typeof window._updateDockVisibilityForPage === 'function') {
+    window._updateDockVisibilityForPage(pageId);
+  }
+
+  // Notify workspace module
+  if (typeof window._onPageChanged === 'function') {
+    window._onPageChanged(pageId, isAIPage, isWorkspacePage);
+  }
 }
 
 // ===== DASHBOARD =====
@@ -632,13 +806,29 @@ function openBlockPanel(blockId) {
   document.getElementById('panelOutputs').value = block.outputs || '';
   if (document.getElementById('panelSound')) document.getElementById('panelSound').value = block.sound || '';
 
-  document.getElementById('blockPanel').classList.add('open');
-  document.getElementById('panelOverlay').classList.add('active');
+  // FIX BUG 1: Remove inline display:none before adding .open class
+  const bp = document.getElementById('blockPanel');
+  const po = document.getElementById('panelOverlay');
+  bp.style.display = '';
+  po.style.display = '';
+  // Force a reflow so the transition fires from the off-screen position
+  void bp.offsetWidth;
+  bp.classList.add('open');
+  po.classList.add('active');
 }
 
 function closeBlockPanel() {
-  document.getElementById('blockPanel').classList.remove('open');
-  document.getElementById('panelOverlay').classList.remove('active');
+  const bp = document.getElementById('blockPanel');
+  const po = document.getElementById('panelOverlay');
+  bp.classList.remove('open');
+  po.classList.remove('active');
+  // Re-hide via display:none after transition completes so it doesn't render behind content
+  setTimeout(() => {
+    if (!bp.classList.contains('open')) {
+      bp.style.display = 'none';
+      po.style.display = 'none';
+    }
+  }, 350);
   currentPanelBlockId = null;
 }
 
@@ -1204,20 +1394,27 @@ function toggleUserGuide() {
 function openUserGuide() {
   const panel = document.getElementById('guidePanel');
   const overlay = document.getElementById('guideOverlay');
-  const content = document.getElementById('guideContent');
-  
+  // FIX BUG 1: Remove inline display:none before adding .active class
+  panel.style.display = '';
+  overlay.style.display = '';
+  void panel.offsetWidth; // Force reflow so transform transition fires correctly
   panel.classList.add('active');
   overlay.classList.add('active');
-  
   switchGuideTab('overview', document.querySelector('.guide-tab'));
 }
 
 function closeUserGuide() {
   const panel = document.getElementById('guidePanel');
   const overlay = document.getElementById('guideOverlay');
-  
   panel.classList.remove('active');
   overlay.classList.remove('active');
+  // Re-hide via display:none after transition completes
+  setTimeout(() => {
+    if (!panel.classList.contains('active')) {
+      panel.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+  }, 450);
 }
 
 function switchGuideTab(tabName, tabElement) {
