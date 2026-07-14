@@ -289,12 +289,22 @@ function onBlockFinished(blockId) {
     }
   }
 
+  // AI Agent in-app notification bubble
+  const blockName2 = card?.querySelector('.block-name-input')?.value || 'Block';
+  if (window.AIAgentCore && typeof window.AIAgentCore.tools.sendNotification === 'function') {
+    window.AIAgentCore.tools.sendNotification.call(window.AIAgentCore, {
+      title: '⏰ ' + (typeof currentLang !== 'undefined' && currentLang === 'ar' ? 'انتهى البلوك!' : 'Block Finished!'),
+      body: blockName2,
+      type: 'success'
+    });
+  }
+
   // Show modal
   showBlockFinishedModal(blockId);
 
   // Update dashboard
   const statStatus = document.getElementById('stat-status');
-  if (statStatus) statStatus.textContent = t('status.idle');
+  if (statStatus) statStatus.textContent = typeof t === 'function' ? t('status.idle') : 'Idle';
 }
 
 function onBlockSkipped(blockId) {
