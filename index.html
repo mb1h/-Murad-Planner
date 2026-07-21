@@ -4,10 +4,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Murad Learning Planner</title>
+  <title>Murad Learning Planner — نظام التعلم اليومي المتقدم</title>
+  <meta name="description"
+    content="منصة التعلم اليومي المتقدمة: جدول أسبوعي بأنماط A/B/C/D، لوحة تنفيذ يومية بمؤقتات ذكية، مساعد ذكاء اصطناعي متكامل، وتقارير PDF احترافية. Advanced daily learning planner with weekly patterns, smart timers, and an integrated AI workspace." />
+  <meta name="theme-color" content="#0a0e1a" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)" />
+  <meta name="color-scheme" content="dark light" />
+  <meta property="og:title" content="Murad Learning Planner" />
+  <meta property="og:description" content="نظام التعلم اليومي المتقدم — Weekly patterns, daily execution board, smart timers & AI workspace." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="ar_SA" />
+  <meta property="og:locale:alternate" content="en_US" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
@@ -23,9 +34,16 @@
   <link rel="stylesheet" href="css/stabilization.css" />
   <!-- AI Agent v5 — modern chat UI -->
   <link rel="stylesheet" href="css/ai-agent.css" />
+  <!-- Cinematic intro + a11y skip-link -->
+  <link rel="stylesheet" href="css/intro.css" />
+  <!-- UI polish: micro-interactions & motion (loads last, additive only) -->
+  <link rel="stylesheet" href="css/polish.css" />
 </head>
 
 <body>
+  <!-- Skip to content (a11y) -->
+  <a href="#mainContent" class="skip-link" data-i18n="a11y.skipToContent">تخطّي إلى المحتوى</a>
+
   <!-- ===== LOADING SCREEN ===== -->
   <div id="loading-screen" class="loading-screen">
     <div class="loading-content">
@@ -294,14 +312,14 @@
 
       <div class="week-controls">
         <div class="week-selector">
-          <button class="btn-icon" onclick="changeWeek(-1)">
-            <i class="fas fa-chevron-right"></i>
+          <button class="btn-icon" onclick="changeWeek(-1)" aria-label="الأسبوع السابق" title="الأسبوع السابق">
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
           </button>
           <span class="week-label"><i class="fas fa-calendar-week"></i>
             <span data-i18n="weekly.week">الأسبوع</span>
             <span id="currentWeekNum">1</span></span>
-          <button class="btn-icon" onclick="changeWeek(1)">
-            <i class="fas fa-chevron-left"></i>
+          <button class="btn-icon" onclick="changeWeek(1)" aria-label="الأسبوع التالي" title="الأسبوع التالي">
+            <i class="fas fa-chevron-left" aria-hidden="true"></i>
           </button>
         </div>
         <div class="auto-save-indicator" id="autoSaveIndicator">
@@ -386,28 +404,28 @@
         </div>
         <div class="integration-form">
           <div class="int-input-group">
-            <label data-i18n="integration.math">المفهوم الرياضي</label>
+            <label for="intMath" data-i18n="integration.math">المفهوم الرياضي</label>
             <input type="text" id="intMath" placeholder="e.g. Vectors" class="int-input" />
           </div>
           <div class="int-connector"><i class="fas fa-plus"></i></div>
           <div class="int-input-group">
-            <label data-i18n="integration.prog">المفهوم البرمجي</label>
+            <label for="intProg" data-i18n="integration.prog">المفهوم البرمجي</label>
             <input type="text" id="intProg" placeholder="e.g. NumPy Arrays" class="int-input" />
           </div>
           <div class="int-connector"><i class="fas fa-plus"></i></div>
           <div class="int-input-group">
-            <label data-i18n="integration.cs">مفهوم علوم الحاسوب</label>
+            <label for="intCS" data-i18n="integration.cs">مفهوم علوم الحاسوب</label>
             <input type="text" id="intCS" placeholder="e.g. Memory Layout" class="int-input" />
           </div>
           <div class="int-connector"><i class="fas fa-arrow-down"></i></div>
           <div class="int-result-group">
-            <label data-i18n="integration.result">الناتج المتكامل</label>
+            <label for="intResult" data-i18n="integration.result">الناتج المتكامل</label>
             <input type="text" id="intResult" placeholder="e.g. Vector Similarity Tool" class="int-input" />
           </div>
         </div>
         <div class="integration-diagram" id="integrationDiagram"></div>
         <div class="int-relation-group">
-          <label data-i18n="integration.relation">كيف ترتبط معاً؟</label>
+          <label for="intRelation" data-i18n="integration.relation">كيف ترتبط معاً؟</label>
           <textarea id="intRelation" rows="4" placeholder="اشرح العلاقة بين المفاهيم..."
             class="int-textarea"></textarea>
         </div>
@@ -437,7 +455,7 @@
             </h3>
           </div>
           <div class="setting-item">
-            <label data-i18n="settings.defaultSound">نغمة التنبيه الافتراضية</label>
+            <label for="defaultSound" data-i18n="settings.defaultSound">نغمة التنبيه الافتراضية</label>
             <select class="setting-select" id="defaultSound" onchange="saveSettings()">
               <option value="bell">Classic Bell 🔔</option>
               <option value="digital">Digital Alarm 📳</option>
@@ -453,7 +471,7 @@
           </div>
           <div class="sound-library" id="soundLibrary"></div>
           <div class="setting-item">
-            <label data-i18n="settings.volume">مستوى الصوت</label>
+            <label for="alarmVolume" data-i18n="settings.volume">مستوى الصوت</label>
             <div class="slider-wrap">
               <input type="range" min="0" max="100" value="70" class="setting-slider" id="alarmVolume"
                 onchange="saveSettings()" />
@@ -470,7 +488,7 @@
             </div>
           </div>
           <div class="setting-item">
-            <label data-i18n="settings.repeatCount">عدد التكرارات</label>
+            <label for="repeatCount" data-i18n="settings.repeatCount">عدد التكرارات</label>
             <select class="setting-select" id="repeatCount" onchange="saveSettings()">
               <option value="1">1</option>
               <option value="2">2</option>
@@ -480,7 +498,7 @@
             </select>
           </div>
           <div class="setting-item">
-            <label data-i18n="settings.duration">مدة التنبيه</label>
+            <label for="alarmDuration" data-i18n="settings.duration">مدة التنبيه</label>
             <select class="setting-select" id="alarmDuration" onchange="saveSettings()">
               <option value="5">5 ثواني</option>
               <option value="10" selected>10 ثواني</option>
@@ -493,7 +511,7 @@
             <label data-i18n="settings.uploadSound">رفع نغمة مخصصة</label>
             <div class="upload-sound-area">
               <input type="file" id="customSoundFile" accept=".mp3,.wav,.ogg,.m4a" style="display: none"
-                onchange="uploadCustomSound(this)" />
+                onchange="uploadCustomSound(this)" aria-label="رفع ملف صوتي" />
               <button class="btn-secondary" onclick="document.getElementById('customSoundFile').click()">
                 <i class="fas fa-upload"></i>
                 <span data-i18n="settings.upload">رفع ملف صوتي</span>
@@ -543,19 +561,28 @@
             </div>
           </div>
           <div class="setting-item">
-            <label data-i18n="settings.userName">اسم المستخدم</label>
+            <label for="userName" data-i18n="settings.userName">اسم المستخدم</label>
             <input type="text" class="setting-input" id="userName" value="Murad" onchange="saveSettings()"
               placeholder="أدخل اسمك" />
           </div>
           <div class="setting-item">
-            <label data-i18n="settings.weekStart">بداية الأسبوع من</label>
+            <label for="weekStartDate" data-i18n="settings.weekStart">بداية الأسبوع من</label>
             <input type="date" class="setting-input" id="weekStartDate" onchange="saveSettings()" />
           </div>
           <div class="setting-item">
             <label data-i18n="settings.notifications">الإشعارات</label>
             <div class="toggle-wrap">
               <label class="toggle">
-                <input type="checkbox" id="enableNotifications" checked onchange="saveSettings()" />
+                <input type="checkbox" id="enableNotifications" checked onchange="saveSettings()" aria-label="تفعيل الإشعارات" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          <div class="setting-item">
+            <label data-i18n="settings.intro" title="تُعطّل تلقائياً عند تفضيل تقليل الحركة">المقدمة السينمائية عند البدء</label>
+            <div class="toggle-wrap">
+              <label class="toggle">
+                <input type="checkbox" id="enableIntro" checked onchange="saveSettings()" aria-label="تفعيل المقدمة السينمائية" />
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -605,49 +632,49 @@
   <aside class="block-panel" id="blockPanel" style="display:none">
     <div class="panel-header">
       <h3 data-i18n="panel.title">تفاصيل البلوك</h3>
-      <button class="btn-icon" onclick="closeBlockPanel()">
-        <i class="fas fa-times"></i>
+      <button class="btn-icon" onclick="closeBlockPanel()" aria-label="إغلاق اللوحة" title="إغلاق">
+        <i class="fas fa-times" aria-hidden="true"></i>
       </button>
     </div>
     <div class="panel-body" id="panelBody">
       <div class="panel-field">
-        <label data-i18n="panel.name">اسم البلوك</label>
+        <label for="panelName" data-i18n="panel.name">اسم البلوك</label>
         <input type="text" id="panelName" class="panel-input" />
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.time">الوقت</label>
+        <label for="panelTimeStart" data-i18n="panel.time">الوقت</label>
         <div class="time-inputs">
-          <input type="text" id="panelTimeStart" class="panel-input time-input" placeholder="08:00" />
-          <span>-</span>
-          <input type="text" id="panelTimeEnd" class="panel-input time-input" placeholder="09:00" />
+          <input type="text" id="panelTimeStart" class="panel-input time-input" placeholder="08:00" aria-label="وقت البداية" />
+          <span aria-hidden="true">-</span>
+          <input type="text" id="panelTimeEnd" class="panel-input time-input" placeholder="09:00" aria-label="وقت النهاية" />
         </div>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.activity">النشاط</label>
+        <label for="panelActivity" data-i18n="panel.activity">النشاط</label>
         <textarea id="panelActivity" class="panel-textarea" rows="2"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.goal">الهدف</label>
+        <label for="panelGoal" data-i18n="panel.goal">الهدف</label>
         <textarea id="panelGoal" class="panel-textarea" rows="2"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.learn">ماذا سأتعلم؟</label>
+        <label for="panelLearn" data-i18n="panel.learn">ماذا سأتعلم؟</label>
         <textarea id="panelLearn" class="panel-textarea" rows="2"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.apply">ماذا سأطبق؟</label>
+        <label for="panelApply" data-i18n="panel.apply">ماذا سأطبق؟</label>
         <textarea id="panelApply" class="panel-textarea" rows="2"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.notes">الملاحظات</label>
+        <label for="panelNotes" data-i18n="panel.notes">الملاحظات</label>
         <textarea id="panelNotes" class="panel-textarea" rows="3"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.outputs">المخرجات المتوقعة</label>
+        <label for="panelOutputs" data-i18n="panel.outputs">المخرجات المتوقعة</label>
         <textarea id="panelOutputs" class="panel-textarea" rows="2"></textarea>
       </div>
       <div class="panel-field">
-        <label data-i18n="panel.sound">نغمة التنبيه</label>
+        <label for="panelSound" data-i18n="panel.sound">نغمة التنبيه</label>
         <select class="setting-select" id="panelSound">
           <option value="">الافتراضي</option>
           <option value="bell">Classic Bell 🔔</option>
@@ -716,8 +743,8 @@
           <p>Murad Learning Planner</p>
         </div>
       </div>
-      <button class="guide-close-btn" onclick="closeUserGuide()">
-        <i class="fas fa-times"></i>
+      <button class="guide-close-btn" onclick="closeUserGuide()" aria-label="إغلاق الدليل" title="إغلاق">
+        <i class="fas fa-times" aria-hidden="true"></i>
       </button>
     </div>
     <div class="guide-tabs">
@@ -754,6 +781,8 @@
 
   <!-- Cross-Browser Guard — must load FIRST, before any other script -->
   <script src="js/cross-browser-guard.js"></script>
+  <!-- Cinematic intro engine (guards: reduced-motion / settings / session) -->
+  <script src="js/intro.js"></script>
   <!-- i18n System (load first) -->
   <script src="js/i18n/ar.js"></script>
   <script src="js/i18n/en.js"></script>

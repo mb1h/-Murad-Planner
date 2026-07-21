@@ -214,7 +214,7 @@
               <i class="fas fa-plus"></i>
             </button>
             <textarea id="dockAIInput" class="dock-textarea-v6" rows="1"
-              placeholder="اسأل أو اطلب أي شيء..."
+              placeholder="اسأل أو اطلب أي شيء..." aria-label="مربع رسالة المساعد الذكي"
               onkeydown="DockSystem.handleKey(event)"
               oninput="DockSystem.autoResize(this)"></textarea>
             <button class="dock-send-btn-v6" id="dockSendBtn"

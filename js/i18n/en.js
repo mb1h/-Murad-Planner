@@ -3,6 +3,13 @@
    ============================================================ */
 
 const LANG_EN = {
+  // ── Accessibility & Intro ──────────────────────────────────
+  'a11y.skipToContent': 'Skip to content',
+  'intro.skip': 'Skip',
+  'intro.tagline': 'Advanced Daily Learning System',
+  'settings.intro': 'Cinematic intro on startup',
+  'settings.introHint': 'Automatically disabled when reduced motion is preferred',
+
   // ── Navigation ─────────────────────────────────────────────
   'nav.main': 'Main',
   'nav.dashboard': 'Dashboard',

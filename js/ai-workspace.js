@@ -2,15 +2,30 @@
    AI WORKSPACE UI — Full LLM Interface
    ============================================================ */
 
-/* ===== MARKED.JS INTEGRATION (inline mini renderer) ===== */
+/* ===== MARKED.JS INTEGRATION (inline mini renderer) =====
+   Security: the whole input is HTML-escaped FIRST (code blocks are
+   extracted to placeholders beforehand so they keep exact contents),
+   then markdown transforms run on the escaped text. Link hrefs are
+   restricted to http(s)/mailto/# to block javascript: URLs. */
+function _sanitizeUrl(url) {
+  const u = String(url || '').trim();
+  return /^(https?:\/\/|mailto:|#|\/)/i.test(u) ? u : '#';
+}
+
 function renderMarkdown(text) {
   if (!text) return '';
-  let html = text
-    // Code blocks
-    .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
-      const langClass = lang ? ` class="language-${lang}"` : '';
-      return `<div class="ai-code-block"><div class="code-header"><span class="code-lang">${lang||'code'}</span><button class="copy-code-btn" onclick="copyCode(this)"><i class="fas fa-copy"></i></button></div><pre><code${langClass}>${escapeHtml(code.trim())}</code></pre></div>`;
-    })
+  // 1) Extract fenced code blocks so escaping/markdown never touches them
+  const codeBlocks = [];
+  let src = String(text).replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
+    const langClass = lang ? ` class="language-${escapeHtml(lang)}"` : '';
+    codeBlocks.push(`<div class="ai-code-block"><div class="code-header"><span class="code-lang">${escapeHtml(lang || 'code')}</span><button class="copy-code-btn" onclick="copyCode(this)" aria-label="نسخ الكود" title="نسخ"><i class="fas fa-copy" aria-hidden="true"></i></button></div><pre><code${langClass}>${escapeHtml(code.trim())}</code></pre></div>`);
+    return '\u0000CODE' + (codeBlocks.length - 1) + '\u0000';
+  });
+
+  // 2) Escape ALL raw HTML in the remaining text (XSS guard)
+  src = escapeHtml(src);
+
+  let html = src
     // Inline code
     .replace(/`([^`]+)`/g, '<code class="ai-inline-code">$1</code>')
     // Headers
@@ -25,15 +40,15 @@ function renderMarkdown(text) {
     .replace(/_(.+?)_/g, '<em>$1</em>')
     // Horizontal rule
     .replace(/^---+$/gm, '<hr class="ai-hr">')
-    // Blockquote
-    .replace(/^> (.+)$/gm, '<blockquote class="ai-blockquote">$1</blockquote>')
+    // Blockquote (input is already escaped, so '>' is '&gt;')
+    .replace(/^&gt; (.+)$/gm, '<blockquote class="ai-blockquote">$1</blockquote>')
     // Unordered lists
     .replace(/^[\*\-] (.+)$/gm, '<li class="ai-li">$1</li>')
     .replace(/(<li class="ai-li">.*<\/li>)\n(?!<li)/g, '<ul class="ai-ul">$1</ul>\n')
     // Ordered lists
     .replace(/^\d+\. (.+)$/gm, '<li class="ai-oli">$1</li>')
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="ai-link">$1</a>')
+    // Links — href restricted to safe protocols
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => `<a href="${_sanitizeUrl(url)}" target="_blank" rel="noopener noreferrer" class="ai-link">${label}</a>`)
     // Paragraphs
     .replace(/\n\n/g, '</p><p class="ai-p">')
     // Line breaks
@@ -43,6 +58,9 @@ function renderMarkdown(text) {
   html = '<p class="ai-p">' + html + '</p>';
   // Fix nested UL/OL
   html = html.replace(/<\/li>\n<li/g, '</li><li');
+
+  // 3) Restore extracted code blocks
+  html = html.replace(/\u0000CODE(\d+)\u0000/g, (_, i) => codeBlocks[Number(i)] || '');
 
   return html;
 }
@@ -1463,11 +1481,11 @@ function renderProviderCard(provider) {
                    onchange="toggleProvider('${provider.id}', this.checked)">
             <span class="toggle-slider"></span>
           </label>
-          <button class="btn-icon" onclick="openEditProviderModal('${provider.id}')">
-            <i class="fas fa-edit"></i>
+          <button class="btn-icon" onclick="openEditProviderModal('${provider.id}')" aria-label="تعديل المزود" title="تعديل">
+            <i class="fas fa-edit" aria-hidden="true"></i>
           </button>
-          <button class="btn-icon danger" onclick="deleteProvider('${provider.id}')">
-            <i class="fas fa-trash"></i>
+          <button class="btn-icon danger" onclick="deleteProvider('${provider.id}')" aria-label="حذف المزود" title="حذف">
+            <i class="fas fa-trash" aria-hidden="true"></i>
           </button>
         </div>
       </div>

@@ -162,8 +162,9 @@ function renderSoundLibrary() {
   el.innerHTML = Object.entries(SOUNDS).map(([id, info]) => `
     <div class="sound-item">
       <span class="sound-name">${currentLang === 'ar' ? info.nameAr : info.name}</span>
-      <button class="sound-play-btn" onclick="previewSound('${id}'); event.stopPropagation();">
-        <i class="fas fa-play"></i>
+      <button class="sound-play-btn" onclick="previewSound('${id}'); event.stopPropagation();"
+              aria-label="${currentLang === 'ar' ? 'معاينة' : 'Preview'} ${currentLang === 'ar' ? info.nameAr : info.name}" title="${currentLang === 'ar' ? 'معاينة' : 'Preview'}">
+        <i class="fas fa-play" aria-hidden="true"></i>
       </button>
       <button class="sound-select-btn ${currentDefault === id ? 'selected' : ''}" 
               onclick="selectDefaultSound('${id}'); event.stopPropagation();">
