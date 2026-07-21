@@ -13,19 +13,9 @@
   --ai-danger: #ef4444;
   --ai-glow: rgba(99, 102, 241, 0.3);
   
-  /* Glass morphism
-     FIX: --glass-bg / --glass-border are intentionally NOT redefined here.
-     style.css already defines them on :root (dark values) and overrides
-     them again under [data-theme="light"] with the correct light-mode
-     values. Both rules have equal specificity (:root); since this file
-     loads AFTER style.css in index.html, redefining these two variables
-     here silently won the cascade in BOTH themes — permanently locking
-     every .glass-card/.status-card (and any other element using
-     var(--glass-bg)) to the dark-mode transparency value even when
-     [data-theme="light"] was active, making light-mode cards look
-     unintentionally translucent instead of solid white. Only
-     --glass-blur/--glass-shadow are kept here since style.css never
-     defines those two. */
+  /* Glass morphism */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
   --glass-blur: blur(20px);
   --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   
