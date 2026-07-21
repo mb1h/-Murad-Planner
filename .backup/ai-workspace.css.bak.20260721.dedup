@@ -2,24 +2,6 @@
    AI LEARNING OS — Complete Stylesheet
    ============================================================ */
 
-/* ------------------------------------------------------------
-   AI CSS de-duplication note (safe cleanup pass):
-   index.html loads css/ai-agent.css AFTER this file, and both files
-   define styles for several shared class names (.ai-sidebar,
-   .ai-message-*, .ai-model-*, etc.) at equal (:root/class) specificity.
-   For most of those shared selectors each file also contributes at
-   least one UNIQUE property, so both rule blocks are kept intentionally
-   (this is documented, not accidental, duplication — full design-system
-   unification is deferred to the Phase 4 UI modernization pass).
-   A handful of selectors below, however, were found to be 100%
-   redundant: every single property ai-workspace.css declared for them
-   was already re-declared identically (or superseded) by ai-agent.css,
-   meaning ai-agent.css's copy was already the ONLY one taking visual
-   effect. Those fully-dead rule bodies were removed from this file
-   (verified with a Playwright before/after visual diff — zero pixel
-   change) and are marked with a short inline note at their old location.
-   ------------------------------------------------------------ */
-
 /* ===== CSS VARIABLES ===== */
 :root {
   /* AI Accent Colors */
@@ -548,8 +530,10 @@
 }
 
 /* ===== MODEL SELECTOR ===== */
-/* .ai-model-selector: fully duplicated in ai-agent.css (loads after this
-   file, wins already) — removed dead copy, see de-dup note at top of file. */
+.ai-model-selector {
+  position: relative;
+}
+
 .ai-model-btn {
   display: flex;
   align-items: center;
@@ -586,7 +570,10 @@
   backdrop-filter: var(--glass-blur);
 }
 
-/* [dir="rtl"] .ai-model-dropdown: fully duplicated in ai-agent.css, removed dead copy. */
+[dir="rtl"] .ai-model-dropdown {
+  right: auto;
+  left: 0;
+}
 
 .ai-model-group {
   padding: 8px;
@@ -710,7 +697,9 @@
   align-self: flex-start;
 }
 
-/* .ai-message-avatar: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-message-avatar {
+  flex-shrink: 0;
+}
 
 .ai-avatar-user, .ai-avatar-ai {
   width: 36px;
@@ -779,7 +768,12 @@
   color: #fca5a5;
 }
 
-/* .ai-message-meta: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
 
 .ai-message.user .ai-message-meta {
   flex-direction: row-reverse;
@@ -797,7 +791,9 @@
   transition: opacity var(--transition-fast);
 }
 
-/* .ai-message:hover .ai-message-actions: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-message:hover .ai-message-actions {
+  opacity: 1;
+}
 
 .ai-message-actions button {
   width: 26px;
@@ -848,7 +844,12 @@
 }
 
 /* Message Attachments */
-/* .ai-message-attachments: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-message-attachments {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .ai-msg-attachment { border-radius: 8px; overflow: hidden; }
 .ai-msg-image { max-width: 280px; max-height: 200px; object-fit: cover; cursor: pointer; border-radius: 8px; }
 .ai-msg-file { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--input-bg); border: 1px solid var(--ai-border); border-radius: 8px; font-size: 0.82rem; color: var(--ai-text); }
@@ -865,7 +866,12 @@
   animation: fadeIn 0.2s ease;
 }
 
-/* .ai-lightbox img: fully duplicated (and superseded) in ai-agent.css, removed dead copy. */
+.ai-lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+}
 
 .ai-lightbox button {
   position: absolute;
@@ -1193,7 +1199,7 @@
 /* ===== MARKDOWN STYLES ===== */
 .ai-message-text.markdown { white-space: normal; }
 .markdown .ai-p { margin: 0 0 12px; color: inherit; }
-/* .markdown .ai-p:last-child: fully duplicated in ai-agent.css, removed dead copy. */
+.markdown .ai-p:last-child { margin-bottom: 0; }
 .markdown .ai-h1 { font-size: 1.4rem; font-weight: 800; margin: 16px 0 8px; color: var(--ai-text); }
 .markdown .ai-h2 { font-size: 1.2rem; font-weight: 700; margin: 14px 0 6px; color: var(--ai-text); }
 .markdown .ai-h3 { font-size: 1rem; font-weight: 700; margin: 12px 0 4px; color: var(--ai-primary); }
@@ -1263,7 +1269,13 @@
 }
 
 /* Toggle small */
-/* .ai-toggle-sm: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-toggle-sm {
+  position: relative;
+  display: inline-block;
+  width: 32px;
+  height: 18px;
+}
+
 .ai-toggle-sm input {
   opacity: 0;
   width: 0;
@@ -1296,7 +1308,9 @@
   background: var(--ai-primary);
 }
 
-/* .ai-toggle-sm input:checked + .toggle-slider-sm::before: fully duplicated in ai-agent.css, removed dead copy. */
+.ai-toggle-sm input:checked + .toggle-slider-sm::before {
+  transform: translateX(14px);
+}
 
 /* ===== AI SETTINGS PAGE ===== */
 .ai-providers-grid {

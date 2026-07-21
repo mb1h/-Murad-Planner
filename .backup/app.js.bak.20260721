@@ -455,7 +455,6 @@ function renderWeeklyTable() {
                  contenteditable="true"
                  data-day="${day.key}"
                  data-col="${i}"
-                 data-placeholder="${escapeAttr(t('weekly.cell.placeholder'))}"
                  oninput="autoSaveWeekly()"
                  onblur="autoSaveWeekly()">${escapeHtml(cell)}</div>
           </td>

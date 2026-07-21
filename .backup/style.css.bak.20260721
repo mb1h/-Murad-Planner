@@ -892,7 +892,6 @@ body[data-lang="en"] {
 
 .editable-cell {
   min-width: 80px;
-  min-height: 1.4em;
   cursor: text;
   border-radius: 6px;
   padding: 6px;
@@ -903,24 +902,6 @@ body[data-lang="en"] {
   outline: none;
   background: rgba(99, 102, 241, 0.1);
   box-shadow: inset 0 0 0 2px var(--accent-primary);
-}
-
-/* UX: empty contenteditable cells looked like a rendering bug (no visual
-   affordance hinting they're clickable/editable). Show a light italic
-   placeholder (from data-placeholder, localized via weekly.cell.placeholder)
-   when the cell has no content yet — purely visual, :empty::before content
-   is never part of the actual saved cell text. Hidden automatically on
-   focus so it never gets in the way while typing. */
-.editable-cell:empty::before {
-  content: attr(data-placeholder);
-  color: var(--text-muted);
-  opacity: 0.55;
-  font-style: italic;
-  pointer-events: none;
-}
-
-.editable-cell:focus:empty::before {
-  opacity: 0.35;
 }
 
 .day-action-btn {
@@ -2146,10 +2127,9 @@ body[data-lang="en"] {
     grid-template-columns: 1fr;
   }
   
-  /* page header: no extra margin — hamburger clearance comes from
-     .page.active's padding-top (layout.css §8 + cross-browser.css §23). */
+  /* page header: margin-top for hamburger button (layout.css §8 handles padding-top) */
   .page-header {
-    margin-top: 0;
+    margin-top: 0; /* layout.css §8 already adds padding-top for hamburger */
   }
 }
 
@@ -2680,19 +2660,6 @@ body::before {
   display: block;
   padding: 24px;  /* override default 2rem with 24px for AI sub-pages */
   overflow-y: auto;  /* independent scroll per sub-page */
-}
-
-@media (max-width: 899px) {
-  /* The unconditional `padding: 24px` rule above has no media query, so on
-     mobile it wins (same specificity, declared later) and wipes out the
-     hamburger-button clearance that layout.css §8 reserves via padding-top.
-     Restore just the top side here; left/right/bottom stay at 24px. */
-  .page#page-ai-settings.active,
-  .page#page-ai-personality.active,
-  .page#page-ai-automation.active,
-  .page#page-ai-analytics.active {
-    padding-top: calc(24px + 56px);
-  }
 }
 
 /* Loading state improvements */

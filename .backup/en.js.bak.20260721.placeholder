@@ -48,7 +48,6 @@ const LANG_EN = {
   'weekly.subtitle': 'Editable Weekly Schedule',
   'weekly.week': 'Week',
   'weekly.saved': 'Auto-saved',
-  'weekly.cell.placeholder': 'Click to add…',
 
   // ── Table headers ───────────────────────────────────────────
   'table.day': 'Day',
