@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>اختبار محرك تقرير PDF</title>
+<style>
+  body { font-family: system-ui; background: #0f172a; color: #e2e8f0; padding: 32px; }
+  h1 { font-size: 20px; margin-bottom: 16px; }
+  button { padding: 10px 20px; margin: 4px; font-size: 14px; cursor: pointer; background: #2563eb; color: #fff; border: none; border-radius: 8px; }
+  button:hover { background: #1d4ed8; }
+  #results { margin-top: 20px; font-family: monospace; font-size: 13px; white-space: pre-wrap; direction: ltr; text-align: left; background: #1e293b; padding: 16px; border-radius: 8px; }
+  iframe { width: 100%; height: 70vh; background: #fff; border: none; border-radius: 8px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<h1>🧪 اختبار محرك تقرير PDF — Murad Planner</h1>
+<div>
+  <button onclick="runScenario('normal')">سيناريو عادي (10 بلوكات)</button>
+  <button onclick="runScenario('empty')">يوم فارغ (0 بلوكات)</button>
+  <button onclick="runScenario('dirty')">بيانات تالفة (object/null/NaN)</button>
+  <button onclick="runScenario('long')">ملاحظات طويلة جداً</button>
+  <button onclick="runScenario('large')">حِمل كبير (120 بلوك)</button>
+  <button onclick="runAllChecks()">✅ تشغيل كل الفحوصات</button>
+</div>
+<div id="results">جاهز.</div>
+<iframe id="preview"></iframe>
+
+<script src="js/pdf/pdf-utils.js"></script>
+<script src="js/pdf/pdf-theme.js"></script>
+<script src="js/pdf/pdf-data.js"></script>
+<script src="js/pdf/pdf-renderers.js"></script>
+<script src="js/pdf/pdf-engine.js"></script>
+<script>
+// ── Mock app environment ─────────────────────────────────────
+window.WEEK_SCHEDULE = [
+  { key: 'sat', dayAr: 'السبت', dayEn: 'Saturday', pattern: 'A' },
+  { key: 'sun', dayAr: 'الأحد', dayEn: 'Sunday', pattern: 'B' },
+  { key: 'mon', dayAr: 'الإثنين', dayEn: 'Monday', pattern: 'A' },
+  { key: 'tue', dayAr: 'الثلاثاء', dayEn: 'Tuesday', pattern: 'C' },
+  { key: 'wed', dayAr: 'الأربعاء', dayEn: 'Wednesday', pattern: 'B' },
+  { key: 'thu', dayAr: 'الخميس', dayEn: 'Thursday', pattern: 'C' },
+  { key: 'fri', dayAr: 'الجمعة', dayEn: 'Friday', pattern: 'D' },
+];
+window.settings = { userName: 'مراد' };
+window.currentWeekNum = 3;
+window.currentDayKey = 'tue';
+window.currentDayPattern = 'C';
+
+let mockDayData = null;
+window.getDailyData = () => mockDayData;
+window.saveDailyData = () => true;
+window.showToast = (m, t) => log('[toast:' + t + '] ' + m);
+
+function mkBlock(i, over) {
+  return Object.assign({
+    id: 'blk' + i,
+    timeStart: (8 + Math.floor(i * 0.75)) + ':00',
+    timeEnd: (8 + Math.floor(i * 0.75)) + ':45',
+    name: { ar: 'مادة ' + (i + 1), en: 'Subject ' + (i + 1) },
+    activity: { ar: 'نشاط تعليمي', en: 'Learning activity' },
+    goal: 'هدف البلوك رقم ' + (i + 1),
+    learn: 'سأتعلم مفهوم جديد رقم ' + (i + 1),
+    apply: 'سأطبق التمرين رقم ' + (i + 1),
+    notes: 'ملاحظة عن البلوك ' + (i + 1),
+    outputs: 'مخرَج متوقع ' + (i + 1),
+    duration: 45 + (i % 3) * 15,
+  }, over || {});
+}
+
+const SCENARIOS = {
+  normal: () => ({
+    blocks: [
+      mkBlock(0, { name: { ar: 'رياضيات', en: 'Math' }, notes: 'فهمت مفهوم المتجهات جيداً.\n- المتجه له اتجاه ومقدار\n- الضرب القياسي\n1. مراجعة غداً\n2. حل 10 مسائل' }),
+      mkBlock(1, { name: { ar: 'برمجة', en: 'Programming' }, notes: 'تعلمت الدوال في Python:\n```\ndef greet(name):\n    return f"Hello {name}"\n```\nThe function returns a greeting string.' }),
+      mkBlock(2, { isBreak: true, name: { ar: 'استراحة', en: 'Break' }, goal: '', notes: '', learn: '', apply: '', outputs: '', duration: 15 }),
+      mkBlock(3, { name: { ar: 'علوم الحاسوب', en: 'CS' } }),
+      mkBlock(4, { name: { ar: 'رياضيات', en: 'Math' }, duration: 90 }),
+      mkBlock(5, { isBreak: true, name: { ar: 'غداء', en: 'Lunch' }, goal: '', notes: '', learn: '', apply: '', outputs: '', duration: 60 }),
+      mkBlock(6, { name: { ar: 'تطبيق متكامل', en: 'Integration' }, duration: 90 }),
+      mkBlock(7, { name: { ar: 'مشروع', en: 'Project' } }),
+      mkBlock(8, { name: { ar: 'مراجعة', en: 'Review' }, notes: '' }),
+      mkBlock(9, { name: { ar: 'إغلاق', en: 'Closing' }, aiSummary: 'أداء ممتاز اليوم مع تركيز عالٍ.' }),
+    ],
+    integration: { math: 'المتجهات', prog: 'دوال Python', cs: 'الخوارزميات', result: 'برنامج يحسب المسافات باستخدام المتجهات', relation: 'الرياضيات توفر النموذج، والبرمجة تنفذه، وعلوم الحاسوب تحسّنه.' },
+    timerState: { blk0: { status: 'done' }, blk1: { status: 'done' }, blk3: { status: 'running' } },
+  }),
+  empty: () => ({ blocks: [], integration: {}, timerState: {} }),
+  dirty: () => ({
+    blocks: [
+      { id: 'd1', name: null, goal: undefined, notes: NaN, outputs: {}, learn: [], apply: 'undefined', timeStart: null, duration: 'abc' },
+      { id: 'd2', name: { ar: '', en: '' }, goal: { foo: 'bar' }, notes: 'null', outputs: '[object Object]', duration: -5 },
+      { id: 'd2', name: 'مكرر — يجب ألا يظهر مرتين', goal: 'x' }, // duplicate id
+      { id: 'd3', name: { ar: 'صحيح', en: 'Valid' }, goal: 'هدف سليم', notes: ['ملاحظة ١', 'ملاحظة ٢'], duration: 45 },
+    ],
+    integration: { math: null, prog: undefined, cs: {}, result: '', relation: '' },
+    timerState: {},
+  }),
+  long: () => ({
+    blocks: [
+      mkBlock(0, { name: { ar: 'قراءة معمقة', en: 'Deep Reading' }, notes: ('هذه فقرة طويلة جداً لاختبار الالتفاف والتقسيم عبر الصفحات. '.repeat(60)) + '\n\n- نقطة أولى\n- نقطة ثانية\n\n' + 'Mixed English sentence with تفاصيل عربية inline. '.repeat(30), duration: 120 }),
+      mkBlock(1),
+    ],
+    integration: {}, timerState: {},
+  }),
+  large: () => ({
+    blocks: Array.from({ length: 120 }, (_, i) => mkBlock(i, i % 7 === 3 ? { isBreak: true, name: { ar: 'استراحة', en: 'Break' }, goal: '', notes: '', learn: '', apply: '', outputs: '', duration: 15 } : {})),
+    integration: {}, timerState: Object.fromEntries(Array.from({ length: 60 }, (_, i) => ['blk' + i, { status: 'done' }])),
+  }),
+  isolation: () => ({
+    blocks: [
+      mkBlock(0, { id: 'iso-math', name: { ar: 'رياضيات', en: 'Math' }, notes: 'ISOLATION_NOTE_MATH_ONLY', goal: 'ISOLATION_GOAL_MATH', outputs: 'ISOLATION_OUT_MATH', learn: 'ISOLATION_LEARN_MATH', apply: 'ISOLATION_APPLY_MATH' }),
+      mkBlock(1, { id: 'iso-prog', name: { ar: 'برمجة', en: 'Programming' }, notes: 'ISOLATION_NOTE_PROG_ONLY', goal: 'ISOLATION_GOAL_PROG', outputs: 'ISOLATION_OUT_PROG', learn: 'ISOLATION_LEARN_PROG', apply: 'ISOLATION_APPLY_PROG' }),
+      mkBlock(2, { id: 'iso-review', name: { ar: 'مراجعة', en: 'Review' }, notes: 'ISOLATION_NOTE_REVIEW_ONLY', goal: 'ISOLATION_GOAL_REVIEW', outputs: '', learn: '', apply: '' }),
+    ],
+    integration: {}, timerState: {},
+  }),
+};
+
+// ── Data isolation check: every block's unique content must appear
+//    exactly once in the schedule table and exactly once in its own
+//    detail card — never inside another block's card. ──────────────
+function checkIsolation(html, model) {
+  const errors = [];
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const cards = [...doc.querySelectorAll('.block-card')].filter(c => c.querySelector('.block-card-head .nm'));
+
+  for (const b of model.studyBlocks) {
+    if (!b.notes) continue;
+    // Structural match: a card "owns" this note when one of its
+    // field-content elements' normalized text equals the note's first
+    // meaningful line (multi-line notes are rendered as structured
+    // lists/code blocks, so we anchor on the first line; exact equality
+    // prevents substring false positives like "بلوك 1" vs "بلوك 10").
+    const firstLine = b.notes.split('\n').map(s => s.replace(/^[-*•\d.)\s]+/, '').trim()).find(Boolean) || '';
+    const norm = s => s.replace(/\s+/g, ' ').trim();
+    const plain = norm(b.notes);
+    const owners = cards.filter(c =>
+      [...c.querySelectorAll('.field-content')].some(f => {
+        const t = norm(f.textContent);
+        if (t === plain) return true;
+        // multi-line note: first line must appear as a whole line/item
+        return firstLine && [...f.querySelectorAll('p, li, pre')].some(el => norm(el.textContent) === norm(firstLine));
+      }));
+
+    if (owners.length === 0) { errors.push('note of "' + b.name + '" missing from report'); continue; }
+    if (owners.length > 1) { errors.push('note of "' + b.name + '" bleeds into ' + owners.length + ' cards'); continue; }
+    const ownerName = owners[0].querySelector('.block-card-head .nm').textContent;
+    if (!ownerName.includes(b.name)) {
+      errors.push('note of "' + b.name + '" rendered inside wrong card: ' + ownerName);
+    }
+  }
+  return errors;
+}
+
+function log(msg) { document.getElementById('results').textContent += '\n' + msg; console.log(msg); }
+function clearLog() { document.getElementById('results').textContent = ''; }
+
+function buildHtml(name) {
+  mockDayData = SCENARIOS[name]();
+  const model = window.PDFData.buildDailyModel();
+  return { model, html: window.PDFEngine.composeDocument(model) };
+}
+
+function runScenario(name) {
+  clearLog();
+  const t0 = performance.now();
+  const { html } = buildHtml(name);
+  const ms = (performance.now() - t0).toFixed(1);
+  document.getElementById('preview').srcdoc = html;
+  log('✓ scenario "' + name + '" rendered in ' + ms + ' ms, HTML size: ' + (html.length / 1024).toFixed(1) + ' KB');
+}
+
+function checkHtml(name, html, model) {
+  const errors = [];
+  for (const bad of ['[object Object]', '>undefined<', '>null<', '>NaN<', 'NaN%', 'NaN د', 'NaN س']) {
+    if (html.includes(bad)) errors.push('found forbidden token: ' + bad);
+  }
+  // duplicate block rendering check: each study block name+goal pair appears once in the table
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const rows = doc.querySelectorAll('.pdf-table tbody tr');
+  if (model.blocks.length && rows.length !== model.blocks.length) {
+    errors.push('table rows (' + rows.length + ') != blocks (' + model.blocks.length + ')');
+  }
+  // dedupe check
+  const ids = new Set(model.blocks.map(b => b.id));
+  if (ids.size !== model.blocks.length) errors.push('duplicate block ids in model');
+  // RTL check
+  if (!/dir="rtl"/.test(html)) errors.push('missing dir="rtl"');
+  if (!/lang="ar"/.test(html)) errors.push('missing lang="ar"');
+  // Arabic content present
+  if (!/[\u0600-\u06FF]/.test(doc.querySelector('.cover-title')?.textContent || '')) errors.push('cover title not Arabic');
+  return errors;
+}
+
+function runAllChecks() {
+  clearLog();
+  let pass = 0, fail = 0;
+  for (const name of Object.keys(SCENARIOS)) {
+    const t0 = performance.now();
+    let errs = [];
+    try {
+      const { model, html } = buildHtml(name);
+      errs = checkHtml(name, html, model).concat(checkIsolation(html, model));
+    } catch (e) { errs = ['EXCEPTION: ' + e.message]; }
+    const ms = (performance.now() - t0).toFixed(1);
+    if (errs.length) { fail++; log('✗ ' + name + ' (' + ms + ' ms)\n   ' + errs.join('\n   ')); }
+    else { pass++; log('✓ ' + name + ' (' + ms + ' ms)'); }
+  }
+  log('\n' + (fail ? '❌ FAILED: ' : '✅ ALL PASSED: ') + pass + ' passed, ' + fail + ' failed');
+  window.__testResult = { pass, fail };
+}
+
+// Auto-run in CI mode: test-pdf.html?auto=1
+if (new URLSearchParams(location.search).get('auto')) {
+  window.addEventListener('load', () => setTimeout(runAllChecks, 200));
+}
+</script>
+</body>
+</html>

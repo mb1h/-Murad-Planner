@@ -17,7 +17,6 @@
   <!-- Cross-Browser Compatibility -->
   <link rel="stylesheet" href="css/cross-browser.css" />
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/pdf-report.css" />
   <link rel="stylesheet" href="css/ai-workspace.css" />
   <link rel="stylesheet" href="css/floating-dock.css" />
   <link rel="stylesheet" href="css/ai-enhancements.css" />
@@ -765,8 +764,12 @@
   <script src="js/store.js"></script>
   <script src="js/timer.js"></script>
   <script src="js/sound.js"></script>
-  <script src="js/bidi.js"></script>
-  <script src="js/export-pdf.js"></script>
+  <!-- PDF Report Engine (clean architecture: utils → theme → data → renderers → engine) -->
+  <script src="js/pdf/pdf-utils.js"></script>
+  <script src="js/pdf/pdf-theme.js"></script>
+  <script src="js/pdf/pdf-data.js"></script>
+  <script src="js/pdf/pdf-renderers.js"></script>
+  <script src="js/pdf/pdf-engine.js"></script>
   <script src="js/app.js"></script>
   <!-- AI System -->
   <script src="js/ai-providers.js"></script>
