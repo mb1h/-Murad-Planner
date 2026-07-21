@@ -229,6 +229,21 @@ function saveDailyData(immediate = false) {
     
     const name = nameInput?.value || existingBlock.name?.ar || existingBlock.name || '';
     
+    // ── DATA ISOLATION FIX ─────────────────────────────────────
+    // There is only ONE detail side-panel in the DOM, shared by all
+    // blocks. Its field values (notes/goal/learn/apply/outputs/times)
+    // must ONLY be applied to the block that currently owns the panel
+    // (currentPanelBlockId). Previously they were read for EVERY block
+    // in this loop, so one block's notes bled into all other blocks
+    // (and from there into the exported PDF report).
+    const panelField = (elId, fallback) => {
+      if (isPanelOpen) {
+        const el = document.getElementById(elId);
+        if (el) return el.value;
+      }
+      return fallback || '';
+    };
+    
     blocks.push({
       ...existingBlock,
       id,
@@ -236,14 +251,14 @@ function saveDailyData(immediate = false) {
       activity: typeof (activityInput?.value || existingBlock.activity) === 'object'
         ? ((activityInput?.value ? { ar: activityInput.value, en: activityInput.value } : existingBlock.activity) || { ar: '', en: '' })
         : { ar: activityInput?.value || '', en: activityInput?.value || '' },
-      timeStart: document.getElementById('panelTimeStart')?.value || existingBlock.timeStart || '',
-      timeEnd: document.getElementById('panelTimeEnd')?.value || existingBlock.timeEnd || '',
-      goal: document.getElementById('panelGoal')?.value || existingBlock.goal || '',
-      learn: document.getElementById('panelLearn')?.value || existingBlock.learn || '',
-      apply: document.getElementById('panelApply')?.value || existingBlock.apply || '',
-      notes: document.getElementById('panelNotes')?.value || existingBlock.notes || '',
-      outputs: document.getElementById('panelOutputs')?.value || existingBlock.outputs || '',
-      sound: document.getElementById('panelSound')?.value || existingBlock.sound || '',
+      timeStart: panelField('panelTimeStart', existingBlock.timeStart),
+      timeEnd: panelField('panelTimeEnd', existingBlock.timeEnd),
+      goal: panelField('panelGoal', existingBlock.goal),
+      learn: panelField('panelLearn', existingBlock.learn),
+      apply: panelField('panelApply', existingBlock.apply),
+      notes: panelField('panelNotes', existingBlock.notes),
+      outputs: panelField('panelOutputs', existingBlock.outputs),
+      sound: panelField('panelSound', existingBlock.sound),
       duration: existingBlock.duration || 45,
       isBreak: existingBlock.isBreak || false,
     });
