@@ -892,7 +892,6 @@ body[data-lang="en"] {
 
 .editable-cell {
   min-width: 80px;
-  min-height: 1.4em;
   cursor: text;
   border-radius: 6px;
   padding: 6px;
@@ -903,24 +902,6 @@ body[data-lang="en"] {
   outline: none;
   background: rgba(99, 102, 241, 0.1);
   box-shadow: inset 0 0 0 2px var(--accent-primary);
-}
-
-/* UX: empty contenteditable cells looked like a rendering bug (no visual
-   affordance hinting they're clickable/editable). Show a light italic
-   placeholder (from data-placeholder, localized via weekly.cell.placeholder)
-   when the cell has no content yet — purely visual, :empty::before content
-   is never part of the actual saved cell text. Hidden automatically on
-   focus so it never gets in the way while typing. */
-.editable-cell:empty::before {
-  content: attr(data-placeholder);
-  color: var(--text-muted);
-  opacity: 0.55;
-  font-style: italic;
-  pointer-events: none;
-}
-
-.editable-cell:focus:empty::before {
-  opacity: 0.35;
 }
 
 .day-action-btn {

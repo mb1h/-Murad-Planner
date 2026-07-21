@@ -48,7 +48,6 @@ const LANG_ID = {
   'weekly.subtitle': 'Jadwal Mingguan yang Dapat Diedit',
   'weekly.week': 'Minggu',
   'weekly.saved': 'Tersimpan otomatis',
-  'weekly.cell.placeholder': 'Klik untuk menambah…',
 
   // ── Table headers ───────────────────────────────────────────
   'table.day': 'Hari',

@@ -48,7 +48,6 @@ const LANG_AR = {
   'weekly.subtitle': 'الجدول الأسبوعي القابل للتحرير',
   'weekly.week': 'الأسبوع',
   'weekly.saved': 'تم الحفظ التلقائي',
-  'weekly.cell.placeholder': 'انقر للإضافة…',
 
   // ── Table headers ───────────────────────────────────────────
   'table.day': 'اليوم',
