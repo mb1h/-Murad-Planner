@@ -1,0 +1,4 @@
+.backup/
+supervisord.log
+supervisord.pid
+*.log

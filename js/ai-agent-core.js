@@ -1877,7 +1877,7 @@ ${String(content || '').replace(/\n/g, '\\par\n')}
                 <div class="ai-message-bubble">
                   <img src="${imageUrl}" alt="${prompt}" style="max-width:100%;border-radius:12px;display:block;margin:8px 0" />
                   <div style="font-size:12px;color:var(--text-muted);margin-top:4px">🎨 ${prompt}</div>
-                  <a href="${imageUrl}" download="generated_image.png" target="_blank"
+                  <a href="${imageUrl}" download="generated_image.png" target="_blank" rel="noopener noreferrer"
                      style="display:inline-block;margin-top:8px;padding:6px 14px;background:var(--accent);color:white;border-radius:8px;font-size:12px;text-decoration:none">
                      <i class="fas fa-download"></i> تحميل الصورة
                   </a>

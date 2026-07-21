@@ -102,6 +102,7 @@ let settings = DB.get('settings', {
   enableNotifications: true,
   theme: 'dark',
   perBlockSounds: {},
+  introEnabled: true,
 });
 
 function saveSettings() {
@@ -113,6 +114,8 @@ function saveSettings() {
   settings.userName = document.getElementById('userName')?.value || settings.userName;
   settings.weekStartDate = document.getElementById('weekStartDate')?.value || '';
   settings.enableNotifications = document.getElementById('enableNotifications')?.checked || false;
+  const introEl = document.getElementById('enableIntro');
+  if (introEl) settings.introEnabled = introEl.checked;
   document.getElementById('volumeVal').textContent = settings.volume + '%';
   DB.set('settings', settings);
   showToast(t('toast.saved'), 'success');
@@ -130,6 +133,7 @@ function loadSettingsUI() {
   if (document.getElementById('userName')) document.getElementById('userName').value = settings.userName || 'Murad';
   if (document.getElementById('weekStartDate')) document.getElementById('weekStartDate').value = settings.weekStartDate || '';
   if (document.getElementById('enableNotifications')) document.getElementById('enableNotifications').checked = settings.enableNotifications !== false;
+  if (document.getElementById('enableIntro')) document.getElementById('enableIntro').checked = settings.introEnabled !== false;
 }
 
 // ===== WEEK DATA =====
@@ -366,6 +370,16 @@ function uploadCustomSound(input) {
   input.value = '';
 }
 
+/** Escape a string for safe interpolation into HTML/attributes (XSS guard). */
+function escapeHtmlAttr(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderCustomSoundsList() {
   const sounds = getCustomSounds();
   const el = document.getElementById('customSoundsList');
@@ -375,9 +389,9 @@ function renderCustomSoundsList() {
   if(section) section.style.display = 'block';
   el.innerHTML = sounds.map(s => `
     <div class="custom-sound-item">
-      <span class="custom-sound-name">${s.name}</span>
-      <button class="sound-play-btn" onclick="playCustomSound('${s.id}')"><i class="fas fa-play"></i></button>
-      <button class="custom-sound-delete" onclick="deleteCustomSound('${s.id}')"><i class="fas fa-trash"></i></button>
+      <span class="custom-sound-name">${escapeHtmlAttr(s.name)}</span>
+      <button class="sound-play-btn" onclick="playCustomSound('${s.id}')" aria-label="تشغيل ${escapeHtmlAttr(s.name)}" title="تشغيل"><i class="fas fa-play" aria-hidden="true"></i></button>
+      <button class="custom-sound-delete" onclick="deleteCustomSound('${s.id}')" aria-label="حذف ${escapeHtmlAttr(s.name)}" title="حذف"><i class="fas fa-trash" aria-hidden="true"></i></button>
     </div>
   `).join('');
 }

@@ -13,10 +13,22 @@ window._dragSrcEl = null;
 
 // ===== INITIALIZATION =====
 window.addEventListener('DOMContentLoaded', () => {
-  initLoadingScreen();
+  // Cinematic intro (skippable, reduced-motion aware, once per session,
+  // toggleable in Settings). Falls back to the classic loading screen
+  // instantly when disabled — see js/intro.js guards.
+  const screen = document.getElementById('loading-screen');
+  if (typeof window.shouldPlayIntro === 'function' && window.shouldPlayIntro()) {
+    if (screen) screen.style.display = 'none'; // intro replaces the loading screen
+    window.playCinematicIntro(() => {
+      if (screen) screen.style.display = '';
+      initLoadingScreen(true);
+    });
+  } else {
+    initLoadingScreen(false);
+  }
 });
 
-function initLoadingScreen() {
+function initLoadingScreen(fastMode) {
   const bar = document.getElementById('loading-bar');
   const msg = document.getElementById('loading-msg');
   const screen = document.getElementById('loading-screen');
@@ -30,6 +42,13 @@ function initLoadingScreen() {
     { pct: 90, text: '🧠 Initializing AI Agents...' },
     { pct: 100, text: '✨ Ready!' },
   ];
+
+  // After the cinematic intro, boot instantly — no second loading sequence.
+  if (fastMode) {
+    if (screen) screen.style.display = 'none';
+    initApp();
+    return;
+  }
 
   let i = 0;
   const interval = setInterval(() => {
@@ -948,16 +967,16 @@ function showToast(msg, type = 'info') {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
-    .replace(/&/g, '&')
-    .replace(/</g, '<')
-    .replace(/>/g, '>')
-    .replace(/"/g, '"')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
 
 function escapeAttr(str) {
   if (!str) return '';
-  return String(str).replace(/"/g, '"').replace(/'/g, '&#39;');
+  return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ===== KEYBOARD SHORTCUTS =====

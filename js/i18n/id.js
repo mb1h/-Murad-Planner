@@ -3,6 +3,13 @@
    ============================================================ */
 
 const LANG_ID = {
+  // ── Accessibility & Intro ──────────────────────────────────
+  'a11y.skipToContent': 'Lewati ke konten',
+  'intro.skip': 'Lewati',
+  'intro.tagline': 'Sistem Belajar Harian Tingkat Lanjut',
+  'settings.intro': 'Intro sinematik saat mulai',
+  'settings.introHint': 'Dinonaktifkan otomatis saat preferensi gerakan dikurangi aktif',
+
   // ── Navigation ─────────────────────────────────────────────
   'nav.main': 'Beranda',
   'nav.dashboard': 'Dasbor',
