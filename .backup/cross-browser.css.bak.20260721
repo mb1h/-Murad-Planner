@@ -187,30 +187,25 @@ body {
 /* ── 9. Flex Compatibility ───────────────────────────────────
    Vendor prefixes for older Safari/Android WebView.
    ─────────────────────────────────────────────────────────── */
-/*
-  NOTE: .glass-card, .sidebar-footer, .loading-content, .loading-logo,
-  and .section-header were REMOVED from this list. They are simple
-  block/stacking containers in style.css (no display:flex intended —
-  their children stack vertically via normal block flow or
-  text-align:center). Forcing display:flex (row direction) on them here
-  broke their layout badly (e.g. the Settings page rendered as a
-  garbled horizontal strip, and the loading screen showed the logo
-  beside the title instead of stacked above it). .week-day-header and
-  .block-row were also removed — confirmed dead/unused selectors with
-  zero references anywhere else in the codebase.
-*/
+.glass-card,
 .status-card,
 .page-header,
 .page-actions,
 .nav-item,
 .sidebar-header,
+.sidebar-footer,
 .user-info,
 .sidebar-actions,
+.section-header,
 .card-header-inner,
 .btn-primary,
 .btn-secondary,
 .btn-icon,
+.loading-content,
+.loading-logo,
 .logo,
+.week-day-header,
+.block-row,
 .two-col {
   display: -webkit-box;
   display: -webkit-flex;
@@ -326,20 +321,18 @@ svg {
 }
 
 @media (max-width: 899px) {
-  /* RTL: sidebar is anchored at inset-inline-end (→ physical LEFT edge
-     in RTL), so hiding it means moving further LEFT (negative X).
-     Kept in sync with the authoritative rule in layout.css §4. */
+  /* RTL: sidebar slides right to hide */
   .sidebar {
-    -webkit-transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
-    -ms-transform: translateX(-260px);
-    transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
+    -webkit-transform: translateX(var(--sidebar-w, 260px));
+    -ms-transform: translateX(260px);
+    transform: translateX(var(--sidebar-w, 260px));
   }
 
   [data-lang="en"] .sidebar,
   [dir="ltr"] .sidebar {
-    -webkit-transform: translateX(var(--sidebar-w, 260px));
-    -ms-transform: translateX(260px);
-    transform: translateX(var(--sidebar-w, 260px));
+    -webkit-transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
+    -ms-transform: translateX(-260px);
+    transform: translateX(calc(-1 * var(--sidebar-w, 260px)));
   }
 
   .sidebar.open {

@@ -48,18 +48,8 @@
   flex-wrap: wrap;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────
-   FIX: these were previously bare `.btn-primary` / `.btn-secondary`
-   selectors, which — because this file loads AFTER style.css in
-   index.html — silently overrode the main app's button styling on
-   EVERY page (Dashboard/Weekly/Daily/Settings), not just AI pages.
-   Scoped to the AI page layout containers so the two design systems
-   no longer collide; main-app buttons keep style.css's definitions,
-   AI-page buttons keep their own look untouched. ────────────────── */
-.ai-settings-layout .btn-primary,
-.ai-analytics-layout .btn-primary,
-.ai-auto-layout .btn-primary,
-.ai-personality-layout .btn-primary {
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn-primary {
   background: linear-gradient(135deg, var(--ai-primary, #6c63ff), #8b5cf6);
   color: #fff;
   border: none;
@@ -73,18 +63,9 @@
   gap: 6px;
   transition: all 0.2s ease;
 }
-.ai-settings-layout .btn-primary:hover,
-.ai-analytics-layout .btn-primary:hover,
-.ai-auto-layout .btn-primary:hover,
-.ai-personality-layout .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(108,99,255,0.4);
-}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(108,99,255,0.4); }
 
-.ai-settings-layout .btn-secondary,
-.ai-analytics-layout .btn-secondary,
-.ai-auto-layout .btn-secondary,
-.ai-personality-layout .btn-secondary {
+.btn-secondary {
   background: rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.75);
   border: 1px solid rgba(255,255,255,0.12);
@@ -99,22 +80,13 @@
   transition: all 0.2s ease;
 }
 
-[data-theme="light"] .ai-settings-layout .btn-secondary,
-[data-theme="light"] .ai-analytics-layout .btn-secondary,
-[data-theme="light"] .ai-auto-layout .btn-secondary,
-[data-theme="light"] .ai-personality-layout .btn-secondary {
+[data-theme="light"] .btn-secondary {
   background: rgba(0,0,0,0.06);
   color: #4a4a6a;
   border-color: rgba(0,0,0,0.1);
 }
 
-.ai-settings-layout .btn-secondary:hover,
-.ai-analytics-layout .btn-secondary:hover,
-.ai-auto-layout .btn-secondary:hover,
-.ai-personality-layout .btn-secondary:hover {
-  background: rgba(108,99,255,0.15);
-  border-color: rgba(108,99,255,0.3);
-}
+.btn-secondary:hover { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.3); }
 
 .btn-danger {
   background: rgba(239,68,68,0.15);

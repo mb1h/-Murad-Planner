@@ -186,16 +186,11 @@ body {
    ============================================================ */
 @media (max-width: 899px) {
   .sidebar {
-    /*
-      FIX: the sidebar is anchored with inset-inline-end:0, which in RTL
-      resolves to the LEFT edge of the viewport (not the right — this
-      was the bug: the old translateX(+260px) pushed it further RIGHT,
-      i.e. deeper INTO the viewport on screens wider than 260px, leaving
-      a visible sliver of the "closed" sidebar on every real phone size).
-      To hide it off-screen we must move it OUT past its own anchored
-      edge — i.e. further LEFT (negative X) in RTL.
+    /* 
+      RTL (Arabic): sidebar on right → slide right to hide 
+      translateX(260px) moves it off the right edge
     */
-    transform: translateX(calc(-1 * var(--sidebar-w)));
+    transform: translateX(var(--sidebar-w));
     /* Remove width transition on mobile — only transform */
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: transform;
@@ -205,11 +200,10 @@ body {
     transform: translateX(0);
   }
   
-  /* LTR: sidebar is anchored on the left (inset-inline-end resolves to
-     the physical right edge) → hide it by moving further RIGHT */
+  /* LTR: sidebar on left → slide left to hide */
   [data-lang="en"] .sidebar,
   [dir="ltr"] .sidebar {
-    transform: translateX(var(--sidebar-w));
+    transform: translateX(calc(-1 * var(--sidebar-w)));
   }
   
   [data-lang="en"] .sidebar.open,
